@@ -21,7 +21,7 @@ const activities: Activity[] = [
     // TODO: is description necessary? what is the display limit
     image: "", // TODO: add mock image
     date: "2024-11-27",
-    time: "01:00 PM",
+    time: "1:00 PM",
     attendees: 30,
     location: "Pembroke Green",
   },
@@ -32,6 +32,7 @@ const activities: Activity[] = [
       "Step into a world where stories unfold through the power of movement. The 2024 Fall Dance Concert features ...see more",
     image: "",
     date: "2024-11-24",
+    // TODO: make sure scraped data can be processed / converted to the same date format
     time: "2:00 PM",
     attendees: 50,
     location: "Ashamu Dance Studio",
@@ -47,6 +48,17 @@ const activities: Activity[] = [
     time: "7:00 AM",
     attendees: 15,
     location: "Brown University Bookstore",
+  },
+  {
+    id: 4,
+    title: "Movie Screening: The Crazies (1973)",
+    description:
+      "It’s time for our second screening of the month, and this one’s a classic you won’t want to miss. ...see more",
+    image: "",
+    date: "2024-11-25",
+    time: "5:00 PM",
+    attendees: 47,
+    location: "Metcalf Research Building",
   },
 ];
 

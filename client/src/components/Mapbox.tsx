@@ -47,12 +47,12 @@ export interface LatLong {
 
 // Coordinates for Providence, Rhode Island
 const ProvidenceLatLong: LatLong = {
-  lat: 41.824,
-  long: -71.4128,
+  lat: 41.825743,
+  long: -71.406371,
 };
 
 // Set the initial zoom level for the map
-const initialZoom = 10;
+const initialZoom = 16;
 
 // Main Mapbox component
 export default function Mapbox() {
@@ -117,18 +117,6 @@ export default function Mapbox() {
   // state variable for the query
   const [query, setQuery] = useState<string>("");
 
-  // search method - clear query after
-  // function handleSearch() {
-  //   overlayData(query).then(
-  //     (response: GeoJSON.FeatureCollection | undefined) => {
-  //       setOverlay(response);
-  //       console.log(response);
-  //     }
-  //   );
-
-  //   console.log(query);
-  //   setQuery("");
-  // }
   function handleSearch() {
     overlayData(query).then(
       (response: GeoJSON.FeatureCollection | undefined) => {

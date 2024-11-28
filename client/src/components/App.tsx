@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import "../styles/App.css";
-import MapsGearup from "./MapsGearup";
+import ActivityFinder from "./ActivityFinder";
 import {
   SignedIn,
   SignedOut,
@@ -50,7 +50,7 @@ function App() {
             <SignOutButton />
             <UserButton />
           </div>
-          <MapsGearup />
+          <ActivityFinder />
         </div>
       </SignedIn>
     </div>
