@@ -16,6 +16,22 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
 
 """
+IMPORTANT:
+
+To make this work a few installations and other things must be set up:
+1. Check Your Python Version: 
+    - run: python3 --version
+2. Create and Activate a Virtual Environment
+    - run python3 -m venv event-finder
+    - run source venv/bin/activate
+
+3. Install the needed dependencies:
+    - pip3 install -r requirements.txt
+
+
+"""
+
+"""
 TODO: 
 - write get_driver() class
 
