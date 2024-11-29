@@ -1,6 +1,9 @@
 import { useState } from "react";
 import Mapbox from "./Mapbox";
 import Activities from "./Activities";
+import '../styles/App.css';
+import '../styles/index.css';
+import '../output.css';
 
 // Define an enum for sections, making it easy to refer to different sections by name
 enum Section {
@@ -11,8 +14,8 @@ enum Section {
 export default function ActivitiesFinder() {
   return (
     <div>
-      <h1 aria-label="Page Title">Activity Finder</h1>
-      <div style={{ display: "1000px", gap: "2rem", flexDirection: "column" }}>
+      <p className="header-text text-3xl md:text-7xl !important text-center text-white" aria-label="Page Title">Activity Finder</p>
+      <div className="flex flex-col gap-8">
         <section>
           <Activities />
         </section>

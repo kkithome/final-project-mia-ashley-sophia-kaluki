@@ -1,4 +1,5 @@
 import { useState } from "react";
+import '../output.css';
 
 interface Activity {
   id: number;
