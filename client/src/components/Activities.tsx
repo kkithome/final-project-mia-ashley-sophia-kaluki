@@ -69,9 +69,18 @@ export default function Activities() {
   return (
     <div className="flex flex-row items-center justify-center flex-wrap gap-8 space-x-5 md:space-x-8">
       {activities.map((activity) => (
-        <div key={activity.id} className="border border-customLightBrown bg-customLightBrown rounded-2xl p-4 w-96 h-110 text-center space-y-2">
-          <img src={activity.image} alt={activity.title} className="w-full h-40 object-cover rounded-lg"/>
-          <h2 className="paytone-one text-customRed text-left">{activity.title}</h2>
+        <div
+          key={activity.id}
+          className="border border-customLightBrown bg-customLightBrown rounded-2xl p-4 w-96 h-130 text-center space-y-2"
+        >
+          <img
+            src={activity.image}
+            alt={activity.title}
+            className="w-full h-40 object-cover rounded-lg"
+          />
+          <h2 className="paytone-one text-customRed text-left">
+            {activity.title}
+          </h2>
           <p className="kadwa text-xs text-left">{activity.description}</p>
           <div className="kadwa flex flex-row text-s text-left space-x-3">
             <div className="flex flex-col">
@@ -82,12 +91,13 @@ export default function Activities() {
                 <strong>Time:</strong> {activity.time}
               </p>
             </div>
-            <p> 
+            <p>
               <strong>Location:</strong> {activity.location}
             </p>
           </div>
           <p className="kadwa text-xs">{activity.attendees} Attending</p>
-          <button className="kadwa text-xs"
+          <button
+            className="kadwa rounded-full px-4 py-3 mt-2 mb-2 text-sm border border-black bg-gray-100 hover:bg-brown-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-black"
             onClick={() => alert(`Added ${activity.title} to your calendar!`)}
           >
             Add to Calendar
@@ -97,8 +107,9 @@ export default function Activities() {
               <input type="checkbox" /> Going
             </label>
           </div>
-          <button className="kadwa text-xs"
-            onClick={() => alert(`${activity.title} added to your favorites!`)}
+          <button
+            className="kadwa rounded-full px-4 py-3 mt-2 mb-2 text-sm border border-black bg-gray-100 hover:bg-brown-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-black"
+            onClick={() => alert(`Added ${activity.title} to your calendar!`)}
           >
             Add to Favorites
           </button>
