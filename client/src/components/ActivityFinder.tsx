@@ -4,6 +4,7 @@ import Activities from "./Activities";
 import '../styles/App.css';
 import '../styles/index.css';
 import '../output.css';
+import Bear4 from '../assets/Bear4.png';
 
 // Define an enum for sections, making it easy to refer to different sections by name
 enum Section {
@@ -13,16 +14,19 @@ enum Section {
 
 export default function ActivitiesFinder() {
   return (
-    <div>
-      <p className="header-text text-3xl md:text-7xl !important text-center text-white" aria-label="Page Title">Activity Finder</p>
-      <div className="flex flex-col gap-8">
-        <section>
-          <Activities />
-        </section>
-        <section>
-          <h2>Map</h2>
-          <Mapbox />
-        </section>
+    <div className="space-y-10">
+      <div className="flex flex-row items-end justify-center">
+        <img src={Bear4} alt="A bear" className="w-12 md:w-32 h-auto overflow-hidden relative"/>
+        <p className="limelight text-3xl md:text-7xl text-center text-white" aria-label="Page Title">
+          Activity Finder
+        </p>
+      </div>  
+      <div className="flex flex-col space-x-10">
+        <Activities />
+      </div>
+      {/* <h2>Map</h2> */}
+      <div className="flex flex-col items-center justify-center">
+        <Mapbox/>
       </div>
     </div>
   );

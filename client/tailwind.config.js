@@ -14,6 +14,9 @@ export default {
       fontSize: {
         xxs: ['0.625rem', { lineHeight: '1rem' }],
       },
+      height: {
+        '110': '30rem', 
+      },
     },
   },
   plugins: [],

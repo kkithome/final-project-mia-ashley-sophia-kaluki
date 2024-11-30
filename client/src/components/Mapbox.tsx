@@ -3,6 +3,9 @@ import { useEffect, useState, useRef } from "react";
 import { useUser,
 } from "@clerk/clerk-react";
 import { addPin, clearUser, getPins } from "../utils/api";
+import '../styles/App.css';
+import '../styles/index.css';
+import '../output.css';
 
 // Import Mapbox components from react-map-gl library
 import Map, {
@@ -184,8 +187,8 @@ export default function Mapbox() {
   }, [query, handleSearch]);
 
   return (
-    <div className="map">
-      <div className="search-container">
+    <div className="w-full mt-10">
+      {/* <div className="flex flex-row items-center justify-center mb-8">
         <input
           type="text"
           placeholder="Enter a Keyword"
@@ -194,46 +197,52 @@ export default function Mapbox() {
           style={{ width: "400px" }}
         />
         <button onClick={handleSearch}>Enter</button>
-      </div>
-      <Map
-        mapboxAccessToken={MAPBOX_API_KEY}
-        {...viewState}
-        style={{ width: window.innerWidth, height: window.innerHeight }}
-        mapStyle={"mapbox://styles/mapbox/streets-v12"}
-        onMove={(ev: ViewStateChangeEvent) => setViewState(ev.viewState)}
-        onClick={(ev: MapLayerMouseEvent) => onMapClick(ev)}
-      >
-        {pins.map((pin) => (
-          <Marker // add a marker for every pin in the pins variable
-            latitude={pin.lat}
-            longitude={pin.long}
-          >
-            <img
-              src="/src/components/map-marker.png"
-              style={{
-                width: "24px",
-                height: "24px",
-                cursor: "pointer",
+      </div> */}
+      <div className="w-10/12 mx-auto h-[800px] rounded-lg relative mb-8">
+        <Map
+          mapboxAccessToken={MAPBOX_API_KEY}
+          {...viewState}
+          style={{
+            width: "100%", 
+            height: "100%", 
+            borderRadius: "20px",
+          }}
+          mapStyle={"mapbox://styles/mapbox/streets-v12"}
+          onMove={(ev: ViewStateChangeEvent) => setViewState(ev.viewState)}
+          onClick={(ev: MapLayerMouseEvent) => onMapClick(ev)}
+        >
+          {pins.map((pin) => (
+            <Marker // add a marker for every pin in the pins variable
+              latitude={pin.lat}
+              longitude={pin.long}
+            >
+              <img
+                src="/src/components/map-marker.png"
+                style={{
+                  width: "24px",
+                  height: "24px",
+                  cursor: "pointer",
+                }}
+                alt="map marker"
+              />
+            </Marker>
+          ))}
+          <div style={{ position: "absolute", top: 15, right: 15, zIndex: 1 }}>
+            <button
+              onClick={async () => {
+                // a button to clear pins, also clear data from firebase
+                setPins([]);
+                await clearUser(user.id);
               }}
-              alt="map marker"
-            />
-          </Marker>
-        ))}
-        <div style={{ position: "absolute", top: 15, right: 15, zIndex: 1 }}>
-          <button
-            onClick={async () => {
-              // a button to clear pins, also clear data from firebase
-              setPins([]);
-              await clearUser(user.id);
-            }}
-          >
-            Clear My Pins
-          </button>
-        </div>
-        <Source id="geo_data" type="geojson" data={overlay}>
-          <Layer {...geoLayer} />
-        </Source>
-      </Map>
+            >
+              Clear My Pins
+            </button>
+          </div>
+          <Source id="geo_data" type="geojson" data={overlay}>
+            <Layer {...geoLayer} />
+          </Source>
+        </Map>
+      </div>
     </div>
   );
 }
