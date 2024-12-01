@@ -4,6 +4,8 @@ import '../styles/App.css';
 import '../styles/index.css';
 
 interface Activity {
+
+  
   id: number;
   title: string;
   description: string;
