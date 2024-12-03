@@ -11,7 +11,16 @@ public class Event {
   private String startTime;
   private String endTime;
 
-  public Event(String id, String title, String location, String startDate, String endDate, String description, String eventType, String startTime, String endTime) {
+  public Event(
+      String id,
+      String title,
+      String location,
+      String startDate,
+      String endDate,
+      String description,
+      String eventType,
+      String startTime,
+      String endTime) {
     this.id = id;
     this.title = title;
     this.location = location;
@@ -39,15 +48,25 @@ public class Event {
     return startDate;
   }
 
-  public String getEndDate() { return endDate; }
+  public String getEndDate() {
+    return endDate;
+  }
 
-  public String getdescription() { return description; }
+  public String getdescription() {
+    return description;
+  }
 
-  public String getEventType() { return eventType; }
+  public String getEventType() {
+    return eventType;
+  }
 
-  public String getStartTime() {return startTime; }
+  public String getStartTime() {
+    return startTime;
+  }
 
-  public String getEndTime() {return endTime; }
+  public String getEndTime() {
+    return endTime;
+  }
 
   public void setId(String id) {
     this.id = id;
@@ -60,5 +79,4 @@ public class Event {
   public void setLocation(String location) {
     this.location = location;
   }
-
 }

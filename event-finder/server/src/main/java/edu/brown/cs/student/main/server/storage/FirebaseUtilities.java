@@ -32,7 +32,7 @@ public class FirebaseUtilities implements StorageInterface {
     // ^-- if your /resources/firebase_config.json exists but is not found,
     // try printing workingDirectory and messing around with this path.
 
-    //TODO: SETUP FIREBASE - COMMENTING OUT FOR NOW
+    // TODO: SETUP FIREBASE - COMMENTING OUT FOR NOW
     FileInputStream serviceAccount = new FileInputStream(firebaseConfigPath.toString());
 
     FirebaseOptions options =
