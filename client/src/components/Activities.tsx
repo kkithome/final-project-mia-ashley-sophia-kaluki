@@ -4,8 +4,6 @@ import '../styles/App.css';
 import '../styles/index.css';
 
 interface Activity {
-
-  
   id: number;
   title: string;
   description: string;
@@ -67,6 +65,46 @@ const activities: Activity[] = [
   },
 ];
 
+const createICSFile = (activity: Activity) => {
+  const startDateTime = new Date(`${activity.date}T${convertTo24Hour(activity.time)}`).toISOString();
+  const endDateTime = new Date(
+    new Date(startDateTime).getTime() + 60 * 60 * 1000
+  ).toISOString();
+
+  const icsContent = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "BEGIN:VEVENT",
+    `SUMMARY:${activity.title}`,
+    `DESCRIPTION:${activity.description}`,
+    `LOCATION:${activity.location}`,
+    `DTSTART:${startDateTime.replace(/[-:]/g, "").split(".")[0]}Z`,
+    `DTEND:${endDateTime.replace(/[-:]/g, "").split(".")[0]}Z`,
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+
+  const blob = new Blob([icsContent], { type: "text/calendar" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${activity.title}.ics`;
+  link.click();
+
+  URL.revokeObjectURL(url);
+};
+
+const convertTo24Hour = (time: string) => {
+  const [hourMin, period] = time.split(" ");
+  let [hour, minutes] = hourMin.split(":").map(Number);
+
+  if (period === "PM" && hour !== 12) hour += 12;
+  if (period === "AM" && hour === 12) hour = 0;
+
+  return `${hour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:00`;
+};
+
 export default function Activities() {
   return (
     <div className="flex flex-row items-center justify-center flex-wrap gap-8 space-x-5 md:space-x-8">
@@ -100,7 +138,7 @@ export default function Activities() {
           <p className="kadwa text-xs">{activity.attendees} Attending</p>
           <button
             className="kadwa rounded-full px-4 py-3 mt-2 mb-2 text-sm border border-black bg-gray-100 hover:bg-brown-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-black"
-            onClick={() => alert(`Added ${activity.title} to your calendar!`)}
+            onClick={() => createICSFile(activity)}
           >
             Add to Calendar
           </button>
