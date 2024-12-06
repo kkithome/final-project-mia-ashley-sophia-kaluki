@@ -80,10 +80,10 @@ const pushToFirestore = async () => {
       }
     }
 
-    alert("Activities processed successfully!");
+    // alert("Activities processed successfully!");
   } catch (error) {
     console.error("Error uploading activities:", error);
-    alert("Failed to upload activities.");
+    // alert("Failed to upload activities.");
   }
 };
 
