@@ -5,6 +5,8 @@ import '../styles/App.css';
 import '../styles/index.css';
 import '../output.css';
 import Bear4 from '../assets/Bear4.png';
+import { UserButton } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
 
 // Define an enum for sections, making it easy to refer to different sections by name
 enum Section {
@@ -13,8 +15,20 @@ enum Section {
 }
 
 export default function ActivitiesFinder() {
+  const navigate = useNavigate();
+
   return (
     <div className="space-y-10">
+      <div className="flex w-full justify-end p-4">
+      <div>
+        <button
+          className="paytone-one bg-customRed text-white rounded-lg flex items-center justify-center text-md px-2 py-1 md:px-4 md:py-2 md:text-xl"
+          onClick={() => navigate("/user-profile")}
+        >
+          User Profile
+        </button>
+      </div>
+      </div>
       <div className="flex flex-row items-end justify-center">
         <img
           src={Bear4}
@@ -25,7 +39,7 @@ export default function ActivitiesFinder() {
           className="limelight text-3xl md:text-7xl text-center text-white"
           aria-label="Page Title"
         >
-          Activity Finder
+          Bear Tracks
         </p>
       </div>
       <div className="flex flex-col space-x-10">
