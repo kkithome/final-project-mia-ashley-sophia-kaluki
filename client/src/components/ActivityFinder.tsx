@@ -8,7 +8,6 @@ import Bear4 from '../assets/Bear4.png';
 import { UserButton } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 
-// Define an enum for sections, making it easy to refer to different sections by name
 enum Section {
   MAP_DEMO = "MAP_DEMO",
   ACTIVITIES = "ACTIVITIES",
