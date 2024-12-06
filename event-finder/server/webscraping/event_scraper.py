@@ -28,7 +28,6 @@ To make this work a few installations and other things must be set up:
 3. Install the needed dependencies:
     - pip3 install -r requirements.txt
 
-
 """
 
 """
@@ -100,6 +99,7 @@ def scrape_brown_events():
         time = get_event_time(item, isBrown)
         location = get_location(item, isBrown)
         event = Event(title, None, time, location, None)
+        img_url=image['src']  
         events.append(event)
 
     return events
@@ -167,8 +167,12 @@ def get_location(event, isBrown: bool) -> Location:
     else:
         return Location("need to write scraping for EventBrite")
     
+# scrape_brown_events only runs if we run from main 
+if __name__=="__main__": 
+    scrape_brown_events()
 
-scrape_brown_events()
+
+# https://colab.research.google.com/drive/1fy5cD3Vuxr5h6yoqEGxqmmLNPwkGe-lI?usp=sharing
 
     
 
