@@ -1,70 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import '../output.css';
 import '../styles/App.css';
 import '../styles/index.css';
+import { db } from "./App";
+import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
+import { activities, Activity } from "../activityData";
 
-interface Activity {
-  id: number;
-  title: string;
-  description: string;
-  image: string;
-  date: string;
-  time: string;
-  attendees: number;
-  location: string;
-}
+// hii I moved the mock data to a new file to keep things more organized
+// as I will be adding more data (check out activitiyData.ts in src)
 
-// Mock data
-const activities: Activity[] = [
-  {
-    id: 1,
-    title: "Brown Resgiving 2024: Afternoon High Tea Party",
-    description:
-      "Looking for a delightful way to spend Fall Break? Join us for Brown Resgiving 2024: Afternoon High Tea Party! ...see more",
-    // TODO: is description necessary? what is the display limit
-    image: "https://events.brown.edu/live/image/scale/2x/gid/1/width/300/height/300/crop/1/13607_BrownResgiving2023.rev.1699989289.webp", // TODO: add mock image
-    date: "2024-11-27",
-    time: "1:00 PM",
-    attendees: 30,
-    location: "Pembroke Green",
-  },
-  {
-    id: 2,
-    title: "Fall Dance Concert",
-    description:
-      "Step into a world where stories unfold through the power of movement. The 2024 Fall Dance Concert features ...see more",
-    image: "https://taps.brown.edu/sites/default/files/2024-09/IMG_9874.JPG",
-    date: "2024-11-24",
-    // TODO: make sure scraped data can be processed / converted to the same date format
-    time: "2:00 PM",
-    attendees: 50,
-    location: "Ashamu Dance Studio",
-  },
-  {
-    id: 3,
-    title: "MUSE Foundation 25th Annual Toy Drive",
-    description:
-      "Brown University is proud to partner with the MUSE Foundation of Rhode Island for the 25th Annual #YESpvd! ...see more",
-    image: "https://events.brown.edu/live/image/scale/2x/gid/108/width/300/height/388/crop/1/17509_Red_Modern_Toy_Drive_Flyer_4.rev.1732309946.webp",
-    date: "All Day (until December 12)",
-    // TODO: how will calendar invites works for long-term events / events w/ no exact time?
-    time: "7:00 AM",
-    attendees: 15,
-    location: "Brown University Bookstore",
-  },
-  {
-    id: 4,
-    title: "Movie Screening: The Crazies (1973)",
-    description:
-      "It’s time for our second screening of the month, and this one’s a classic you won’t want to miss. ...see more",
-    image: "https://coolidge.org/sites/default/files/featured_images/Matilda_1996_16%20copy.jpg",
-    date: "2024-11-25",
-    time: "5:00 PM",
-    attendees: 47,
-    location: "Metcalf Research Building",
-  },
-];
 
+/**
+ * This method creates a .ics file download so the user can 
+ * add the event to their calendar.
+ */
 const createICSFile = (activity: Activity) => {
   const startDateTime = new Date(`${activity.date}T${convertTo24Hour(activity.time)}`).toISOString();
   const endDateTime = new Date(
@@ -95,6 +44,9 @@ const createICSFile = (activity: Activity) => {
   URL.revokeObjectURL(url);
 };
 
+/**
+ * This method converts the time string to a more readable format.
+ */
 const convertTo24Hour = (time: string) => {
   const [hourMin, period] = time.split(" ");
   let [hour, minutes] = hourMin.split(":").map(Number);
@@ -105,7 +57,41 @@ const convertTo24Hour = (time: string) => {
   return `${hour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:00`;
 };
 
+/**
+ * This function pushes a list of prepopulated event data to the firebase.
+ * It goes through the list, looks at the event IDs, and only pushes
+ * IDs that are new so there aren't duplicate events.
+ */
+const pushToFirestore = async () => {
+  const activitiesCollection = collection(db, "activities");
+  try {
+    const existingActivitiesSnapshot = await getDocs(activitiesCollection);
+
+    const existingActivityIds = new Set(
+      existingActivitiesSnapshot.docs.map((doc) => doc.data().id)
+    );
+
+    for (const activity of activities) {
+      if (!existingActivityIds.has(activity.id)) {
+        await addDoc(activitiesCollection, activity);
+        console.log(`Activity with ID ${activity.id} added to Firestore.`);
+      } else {
+        console.log(`Activity with ID ${activity.id} already exists.`);
+      }
+    }
+
+    alert("Activities processed successfully!");
+  } catch (error) {
+    console.error("Error uploading activities:", error);
+    alert("Failed to upload activities.");
+  }
+};
+
 export default function Activities() {
+  useEffect(() => {
+    pushToFirestore();
+  }, []);
+
   return (
     <div className="flex flex-row items-center justify-center flex-wrap gap-8 space-x-5 md:space-x-8">
       {activities.map((activity) => (
