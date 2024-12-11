@@ -1,9 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
 import "../styles/App.css";
 import "../styles/index.css";
 import "../output.css";
 import ActivityFinder from "./ActivityFinder";
+import Home from "./Home";
 import Footer from "./Footer";
 import ThreeBearsImage from "../assets/Top3Bears.png";
 import {
@@ -29,7 +31,16 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase with the provided configuration
-initializeApp(firebaseConfig);
+let app;
+if (getApps().length === 0) {
+  app = initializeApp(firebaseConfig); 
+} else {
+  app = getApp(); 
+}
+
+const db = getFirestore(app);
+
+export { db };
 
 function App() {
   return (
@@ -72,7 +83,8 @@ function App() {
               <div className="flex-grow">
                 {/* <ActivityFinder/> */}
                 <Routes>
-                  <Route path="/" element={<ActivityFinder />} />
+                  <Route path="/" element={<Home />} />
+                  <Route path="/activity-finder" element={<ActivityFinder />} />
                   <Route path="/user-profile" element={<UserProfile />} />
                 </Routes>
               </div>

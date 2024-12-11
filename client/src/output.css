@@ -893,6 +893,12 @@ video {
   color: rgb(218 207 197 / var(--tw-text-opacity, 1));
 }
 
+.text-customBrown {
+  --tw-text-opacity: 1;
+  color: rgba(78, 54, 41, var(--tw-text-opacity));
+}
+
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
