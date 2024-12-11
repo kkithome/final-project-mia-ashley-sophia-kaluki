@@ -1,100 +1,130 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import '../output.css';
+import '../styles/App.css';
+import '../styles/index.css';
+import { db } from "./App";
+import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
+import { activities, Activity } from "../activityData";
 
-interface Activity {
-  id: number;
-  title: string;
-  description: string;
-  image: string;
-  date: string;
-  time: string;
-  attendees: number;
-  location: string;
-}
+// hii I moved the mock data to a new file to keep things more organized
+// as I will be adding more data (check out activitiyData.ts in src)
 
-// Mock data
-const activities: Activity[] = [
-  {
-    id: 1,
-    title: "Brown Resgiving 2024: Afternoon High Tea Party",
-    description:
-      "Looking for a delightful way to spend Fall Break? Join us for Brown Resgiving 2024: Afternoon High Tea Party! ...see more",
-    // TODO: is description necessary? what is the display limit
-    image: "", // TODO: add mock image
-    date: "2024-11-27",
-    time: "1:00 PM",
-    attendees: 30,
-    location: "Pembroke Green",
-  },
-  {
-    id: 2,
-    title: "Fall Dance Concert",
-    description:
-      "Step into a world where stories unfold through the power of movement. The 2024 Fall Dance Concert features ...see more",
-    image: "",
-    date: "2024-11-24",
-    // TODO: make sure scraped data can be processed / converted to the same date format
-    time: "2:00 PM",
-    attendees: 50,
-    location: "Ashamu Dance Studio",
-  },
-  {
-    id: 3,
-    title: "MUSE Foundation 25th Annual Toy Drive",
-    description:
-      "Brown University is proud to partner with the MUSE Foundation of Rhode Island for the 25th Annual #YESpvd! ...see more",
-    image: "",
-    date: "All Day (until December 12)",
-    // TODO: how will calendar invites works for long-term events / events w/ no exact time?
-    time: "7:00 AM",
-    attendees: 15,
-    location: "Brown University Bookstore",
-  },
-  {
-    id: 4,
-    title: "Movie Screening: The Crazies (1973)",
-    description:
-      "It’s time for our second screening of the month, and this one’s a classic you won’t want to miss. ...see more",
-    image: "",
-    date: "2024-11-25",
-    time: "5:00 PM",
-    attendees: 47,
-    location: "Metcalf Research Building",
-  },
-];
+
+/**
+ * This method creates a .ics file download so the user can 
+ * add the event to their calendar.
+ */
+const createICSFile = (activity: Activity) => {
+  const startDateTime = new Date(`${activity.date}T${convertTo24Hour(activity.time)}`).toISOString();
+  const endDateTime = new Date(
+    new Date(startDateTime).getTime() + 60 * 60 * 1000
+  ).toISOString();
+
+  const icsContent = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "BEGIN:VEVENT",
+    `SUMMARY:${activity.title}`,
+    `DESCRIPTION:${activity.description}`,
+    `LOCATION:${activity.location}`,
+    `DTSTART:${startDateTime.replace(/[-:]/g, "").split(".")[0]}Z`,
+    `DTEND:${endDateTime.replace(/[-:]/g, "").split(".")[0]}Z`,
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+
+  const blob = new Blob([icsContent], { type: "text/calendar" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${activity.title}.ics`;
+  link.click();
+
+  URL.revokeObjectURL(url);
+};
+
+/**
+ * This method converts the time string to a more readable format.
+ */
+const convertTo24Hour = (time: string) => {
+  const [hourMin, period] = time.split(" ");
+  let [hour, minutes] = hourMin.split(":").map(Number);
+
+  if (period === "PM" && hour !== 12) hour += 12;
+  if (period === "AM" && hour === 12) hour = 0;
+
+  return `${hour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:00`;
+};
+
+/**
+ * This function pushes a list of prepopulated event data to the firebase.
+ * It goes through the list, looks at the event IDs, and only pushes
+ * IDs that are new so there aren't duplicate events.
+ */
+const pushToFirestore = async () => {
+  const activitiesCollection = collection(db, "activities");
+  try {
+    const existingActivitiesSnapshot = await getDocs(activitiesCollection);
+
+    const existingActivityIds = new Set(
+      existingActivitiesSnapshot.docs.map((doc) => doc.data().id)
+    );
+
+    for (const activity of activities) {
+      if (!existingActivityIds.has(activity.id)) {
+        await addDoc(activitiesCollection, activity);
+        console.log(`Activity with ID ${activity.id} added to Firestore.`);
+      } else {
+        console.log(`Activity with ID ${activity.id} already exists.`);
+      }
+    }
+
+    // alert("Activities processed successfully!");
+  } catch (error) {
+    console.error("Error uploading activities:", error);
+    // alert("Failed to upload activities.");
+  }
+};
 
 export default function Activities() {
+  useEffect(() => {
+    pushToFirestore();
+  }, []);
+
   return (
-    <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+    <div className="flex flex-row items-center justify-center flex-wrap gap-8 space-x-5 md:space-x-8">
       {activities.map((activity) => (
         <div
           key={activity.id}
-          style={{
-            border: "1px solid #ccc",
-            borderRadius: "8px",
-            padding: "1rem",
-            width: "300px",
-            textAlign: "center",
-          }}
+          className="border border-customLightBrown bg-customLightBrown rounded-2xl p-4 w-96 h-130 text-center space-y-2"
         >
           <img
             src={activity.image}
             alt={activity.title}
-            style={{ width: "100%", height: "150px", objectFit: "cover" }}
+            className="w-full h-40 object-cover rounded-lg"
           />
-          <h2>{activity.title}</h2>
-          <p>{activity.description}</p>
-          <p>
-            <strong>Date:</strong> {activity.date}
-          </p>
-          <p>
-            <strong>Time:</strong> {activity.time}
-          </p>
-          <p>
-            <strong>Location:</strong> {activity.location}
-          </p>
-          <p>{activity.attendees} Attending</p>
+          <h2 className="paytone-one text-customRed text-left">
+            {activity.title}
+          </h2>
+          <p className="kadwa text-xs text-left">{activity.description}</p>
+          <div className="kadwa flex flex-row text-s text-left space-x-3">
+            <div className="flex flex-col">
+              <p>
+                <strong>Date:</strong> {activity.date}
+              </p>
+              <p>
+                <strong>Time:</strong> {activity.time}
+              </p>
+            </div>
+            <p>
+              <strong>Location:</strong> {activity.location}
+            </p>
+          </div>
+          <p className="kadwa text-xs">{activity.attendees} Attending</p>
           <button
-            onClick={() => alert(`Added ${activity.title} to your calendar!`)}
+            className="kadwa rounded-full px-4 py-3 mt-2 mb-2 text-sm border border-black bg-gray-100 hover:bg-brown-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-black"
+            onClick={() => createICSFile(activity)}
           >
             Add to Calendar
           </button>
@@ -104,7 +134,8 @@ export default function Activities() {
             </label>
           </div>
           <button
-            onClick={() => alert(`${activity.title} added to your favorites!`)}
+            className="kadwa rounded-full px-4 py-3 mt-2 mb-2 text-sm border border-black bg-gray-100 hover:bg-brown-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-black"
+            onClick={() => alert(`Added ${activity.title} to your calendar!`)}
           >
             Add to Favorites
           </button>

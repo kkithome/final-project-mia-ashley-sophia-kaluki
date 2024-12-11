@@ -1,3 +1,4 @@
+
 # from bs4 import BeautifulSoup
 # from requests import get
 # from collections import Counter
@@ -84,10 +85,7 @@
 #     def __init__(self, description, date):
 #         self.description = description
 #         self.date = date
-        
-
-
-
+       
 # def driver_helper(url, wait_class_name, source:Source):
 #     driver = get_driver()
 #     driver.get(url)
@@ -105,12 +103,6 @@
 #                 break
 #             last_height = new_height
 
-#     except Exception as e:
-#         print("Exception while waiting for page elements:", e)
-
-#     soup = BeautifulSoup(driver.page_source, 'html.parser')
-#     driver.quit()
-
 #     return soup
 
 
@@ -127,6 +119,49 @@
 #     elif source == Source.EVENTBRITE: 
 #         url = "https://www.eventbrite.com/d/ri--providence/events/"
 #         wait_class_name = "search-event-card-wrapper"
+=======
+class Event:
+    def __init__(self, source: Source, id: int, title: str, description: str, image: str, 
+                 date: None, time: str, attendees: int, location: Location):
+        self.source = source
+        self.id = id
+        self.title = title
+        self.description = description
+        self.image = image
+        self.date = date
+        self.time = time
+        self.attendees = attendees
+        self.location = location
+
+class Description_and_Date:
+    def __init__(self, description, date):
+        self.description = description
+        self.date = date
+        
+def driver_helper(url, wait_class_name, source:Source):
+    driver = get_driver()
+    driver.get(url)
+    try:
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, wait_class_name))
+        )
+            # Scroll down to load all events (if infinite scrolling is used)
+        last_height = driver.execute_script("return document.body.scrollHeight")
+        while True:
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            WebDriverWait(driver, 3)
+            new_height = driver.execute_script("return document.body.scrollHeight")
+            if new_height == last_height:
+                break
+            last_height = new_height
+
+    except Exception as e:
+        print("Exception while waiting for page elements:", e)
+
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    driver.quit()
+
+    return soup
 
 #     elif source == Source.GO_PVD:
 #         url = "https://www.goprovidence.com/events/?bounds=false&view=list&sort=date#listings"
@@ -206,11 +241,7 @@
 #             event_date = date_text
 
 #         return Description_and_Date(first_sentence, date_text)
-        
-
-        
-           
-    
+       
 # def get_event_time(event, source: Source) -> str:
 #     """ 
 #     Takes in a singular event and scrapes for the time.
@@ -256,6 +287,79 @@
 #             event_endpoints = event_url_endpoints['href']
 #             event_url = brown_url + event_endpoints
 #             return Location(location_name, None, None, event_url)
+
+    event_containers = soup.find_all("div", class_="lw_cal_event_list")
+
+    for event_list in event_containers:
+        event_items = event_list.find_all("div", class_= "lw_cal_event")
+
+
+    for item in event_items:
+        source = source
+        id = len(events) + 1 # applicable for any scraping
+        title = get_event_title(item, source) # done for Brown
+        description = get_event_description_and_date(item, source).description
+        image = get_image(item, source)
+        date = get_event_description_and_date(item, source).date
+        time = get_event_time(item, source)
+        attendees = 0
+        location = get_location(item, source)
+        event = Event(source, id, title, description, image, date, time, 
+                      attendees, location)
+        events.append(event)
+
+    return events
+
+
+def get_event_title(event, source: Source) -> str:
+    """
+    Uses the isBrown boolean to determine which scapring method to use, from there
+    it scrapes the event title
+    """
+    if source == Source.BROWN: 
+            event_title = event.find("div", class_="lw_events_title")
+            if event_title:
+                event_name = event_title.get_text(strip=True)
+                return event_name
+            else: 
+                return "No Event Name"
+    else:
+        event_title = ""
+        return "Need to write scraping for EventBrite"
+    
+def get_event_description_and_date(event, source: Source) -> Description_and_Date:
+    """
+    Parses every event and goes to the specicific event url and parses the 
+    first sentence of the description.
+    """
+    if source == Source.BROWN:
+        event_url = event.find("a")["href"]
+        full_url = "https://events.brown.edu" + event_url  # Make the URL absolute
+
+        driver = get_driver()
+        driver.get(full_url)
+    
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "lw_calendar_event_description"))
+        )
+
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+    
+        description_tag = soup.find("div", class_="lw_calendar_event_description")
+        if description_tag:
+            description_text = description_tag.get_text(strip=True)
+            if len(description_text) >= 1: 
+                first_sentence = description_text.replace("Ph.D", "PhD").split(
+                    ".")[0] + "." if description_text else "No description available."
+          
+        date_tag = soup.find("h5", id="lw_cal_this_day")
+        event_date = "Date Not Found; Please Visit: " + event_url
+        if date_tag: 
+            date_text = "".join([part.strip() for part in date_tag.stripped_strings])
+            event_date = date_text
+
+        return Description_and_Date(first_sentence, date_text)
+        
         
 #         if (physical_checker and virtual_checker):
 #             location_name = physical_checker.get_text(strip=True) + " Virtual"
@@ -267,6 +371,7 @@
 
 #             return Location(location_name, latitude, longitude, event_url)
         
+
 #     elif source == Source.EVENTBRITE:
 #         return Location("need to write scraping for EventBrite")
     
@@ -285,12 +390,29 @@
 
 # scrape_events(Source.BROWN)
 
+    elif source == Source.EVENTBRITE:
+        return Location("need to write scraping for EventBrite")
     
+def get_image(event, source: Source) -> str:
+    if source == Source.BROWN:
+        image_tag = event.find("div", class_="lw_item_thumb")
 
-    
-
-
+        if image_tag:
+            img_tag = image_tag.find("img")
+            if img_tag:
+                return img_tag['src']
             
+        return "No Image to Display"
+
+
+
+scrape_events(Source.BROWN)
+
+    
+
+    
+
+
         
 
 
