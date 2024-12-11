@@ -16,6 +16,7 @@ import {
   UserProfile,
   useUser,
 } from "@clerk/clerk-react";
+import UserP from "./UserP";
 
 // use useUser to get username?
 
@@ -73,7 +74,7 @@ function App() {
                 {/* <ActivityFinder/> */}
                 <Routes>
                   <Route path="/" element={<ActivityFinder />} />
-                  <Route path="/user-profile" element={<UserProfile />} />
+                  <Route path="/user-profile" element={<UserP />} />
                 </Routes>
               </div>
               <Footer />
