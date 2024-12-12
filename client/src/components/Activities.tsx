@@ -2,13 +2,37 @@ import { useEffect, useState } from "react";
 import '../output.css';
 import '../styles/App.css';
 import '../styles/index.css';
-import { db } from "./App";
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+// import { db } from "./App";
 import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import { activities, Activity } from "../activityData";
+
+import firebaseConfig2 from '../resources/firebase2.js';
 
 // hii I moved the mock data to a new file to keep things more organized
 // as I will be adding more data (check out activitiyData.ts in src)
 
+// Initialize Firebase with the provided configuration
+let app;
+if (!app) {
+  console.log("Database initialized"); 
+  app = initializeApp(firebaseConfig2, "activities"); 
+} else {
+  app = getApp(); 
+  console.log("App already created"); 
+}
+
+const db = getFirestore(app);
+
+const testCollection = collection(db, "activities");
+try {
+  console.log(testCollection); 
+  const snapshot = await getDocs(testCollection);
+  console.log("Test query successful:", snapshot.docs.map((doc) => doc.data()));
+} catch (error) {
+  console.error("Test query failed:", error.message);
+}
 
 /**
  * This method creates a .ics file download so the user can 
