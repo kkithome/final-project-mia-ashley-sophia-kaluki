@@ -5,4 +5,3 @@ import java.util.List;
 public interface EventDatasource {
   List<Event> getEvents(String source);
 }
-

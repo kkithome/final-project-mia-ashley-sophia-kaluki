@@ -12,7 +12,7 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 
-public class CachingDatasource  implements Route {
+public class CachingDatasource implements Route {
 
   private final Cache<String, List<Event>> cache;
   private final EventDatasource datasource;

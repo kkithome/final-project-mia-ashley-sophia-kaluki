@@ -3,14 +3,12 @@ package edu.brown.cs.student.main.server.handlers.Pins;
 import edu.brown.cs.student.main.server.Objects.Utils;
 import edu.brown.cs.student.main.server.storage.StorageInterface;
 import java.util.ArrayList;
-import spark.Request;
-import spark.Response;
-import spark.Route;
-
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import spark.Request;
+import spark.Response;
+import spark.Route;
 
 public class FetchPinsHandler implements Route {
 
@@ -19,7 +17,6 @@ public class FetchPinsHandler implements Route {
   public FetchPinsHandler(StorageInterface storageHandler) {
     this.storageHandler = storageHandler;
   }
-
 
   /*
    * Invoked when a request is made ont his route's corresponding path e.g. 'pins'
@@ -34,8 +31,7 @@ public class FetchPinsHandler implements Route {
     Map<String, Object> responseMap = new HashMap<>();
     try {
       System.out.println("Listing all pins");
-      List<Map<String, Object>> vals = this.storageHandler.getCollection("all_users",
-          "pins");
+      List<Map<String, Object>> vals = this.storageHandler.getCollection("all_users", "pins");
 
       if (vals == null) {
         responseMap.put("respose_type", "failure");
@@ -44,7 +40,7 @@ public class FetchPinsHandler implements Route {
       }
 
       List<Map<String, Object>> pins = new ArrayList<>();
-      for(Map<String, Object> pin : vals) {
+      for (Map<String, Object> pin : vals) {
         Map<String, Object> pinData = new HashMap<>();
         pinData.put("user", pin.get("user").toString());
         pinData.put("coordinates", pin.get("coordinates"));
@@ -56,7 +52,8 @@ public class FetchPinsHandler implements Route {
       responseMap.put("pins", pins);
 
     } catch (Exception e) {
-      e.printStackTrace();;
+      e.printStackTrace();
+      ;
       responseMap.put("response_type", "failure");
       responseMap.put("error", e.getMessage());
     }
@@ -64,7 +61,3 @@ public class FetchPinsHandler implements Route {
     return Utils.toMoshiJson(responseMap);
   }
 }
-
-
-
-

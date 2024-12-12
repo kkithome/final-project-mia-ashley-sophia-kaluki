@@ -34,6 +34,6 @@ public class ScraperHandler implements Route {
       responseMap.put("error_details", e.getMessage());
     }
 
-      return Utils.toMoshiJson(responseMap);
-    }
+    return Utils.toMoshiJson(responseMap);
+  }
 }

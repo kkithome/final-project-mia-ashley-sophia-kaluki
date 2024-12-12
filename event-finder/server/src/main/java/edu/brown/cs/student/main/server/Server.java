@@ -5,7 +5,6 @@ import static spark.Spark.after;
 import edu.brown.cs.student.main.server.handlers.Events.ScraperHandler;
 import edu.brown.cs.student.main.server.storage.FirebaseUtilities;
 import edu.brown.cs.student.main.server.storage.StorageInterface;
-import java.beans.EventHandler;
 import spark.Filter;
 import spark.Spark;
 

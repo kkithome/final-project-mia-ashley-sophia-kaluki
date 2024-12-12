@@ -29,21 +29,23 @@ public class ClearAllPinsHandler implements Route {
     try {
       Firestore db = FirestoreClient.getFirestore();
 
-      CollectionReference pinCollection = db.collection("all_users").document(
-          "pins").collection("pins");
+      CollectionReference pinCollection =
+          db.collection("all_users").document("pins").collection("pins");
 
       ApiFuture<QuerySnapshot> querySnapshot = pinCollection.get();
 
-      querySnapshot.get().getDocuments().forEach(doc -> {
-        try {
-          doc.getReference().delete().get();
+      querySnapshot
+          .get()
+          .getDocuments()
+          .forEach(
+              doc -> {
+                try {
+                  doc.getReference().delete().get();
 
-        } catch (ExecutionException | InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-      });
-
-
+                } catch (ExecutionException | InterruptedException e) {
+                  throw new RuntimeException(e);
+                }
+              });
 
       responseMap.put("response_type", "success");
       responseMap.put("allGone", true);
@@ -54,7 +56,6 @@ public class ClearAllPinsHandler implements Route {
       e.printStackTrace();
       responseMap.put("response_type", "error");
       responseMap.put("error", e.getMessage());
-
     }
     return Utils.toMoshiJson(responseMap);
   }

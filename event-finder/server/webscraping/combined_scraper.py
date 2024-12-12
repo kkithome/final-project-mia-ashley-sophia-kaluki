@@ -78,10 +78,7 @@ brown_url = "https://events.brown.edu/event/"
 
 def get_driver():
     chrome_options = webdriver.ChromeOptions()
-    # Add headless mode
-    chrome_options.add_argument("--headless")  
-
-    # Create the driver with the options
+    chrome_options.add_argument("--headless")
     service = ChromeService(ChromeDriverManager().install())
     return webdriver.Chrome(service=service, options=chrome_options)
 
