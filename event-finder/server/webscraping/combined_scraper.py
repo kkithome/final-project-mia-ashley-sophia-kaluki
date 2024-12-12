@@ -5,12 +5,15 @@ import requests
 import time
 from enum import Enum
 import json
+import sys
 
 # Selenium imports
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import WebDriverException
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service as ChromeService
@@ -66,6 +69,12 @@ class Event:
             "category": self.category,
             "paid": self.paid
         }
+class Description_and_Date:
+    def __init__(self, description, date):
+        self.description = description
+        self.date = date
+
+brown_url = "https://events.brown.edu/event/"
 
 def get_driver():
     chrome_options = Options()
@@ -73,11 +82,75 @@ def get_driver():
     service = ChromeService(ChromeDriverManager().install())
     return webdriver.Chrome(service=service, options=chrome_options)
 
+
+def driver_helper(url, wait_class_name, source:Source):
+    driver = get_driver()
+    driver.get(url)
+    try:
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, wait_class_name))
+        )
+            # Scroll down to load all events (if infinite scrolling is used)
+        last_height = driver.execute_script("return document.body.scrollHeight")
+        while True:
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            WebDriverWait(driver, 10)
+            new_height = driver.execute_script("return document.body.scrollHeight")
+            if new_height == last_height:
+                break
+            last_height = new_height
+
+    except Exception as e:
+        print("Exception while waiting for page elements:", e)
+
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    driver.quit()
+
+    return soup
+
+
+def scrape_events(source: Source):
+    """
+    Fetches events from the source (Events@Brown, EventBrite, or Go Providence)
+    and parses them into an instance of the Activity class
+    """
+
+    
+    if source == Source.BROWN:
+        url = "https://events.brown.edu/all"
+        wait_class_name = "lw_cal_event_list"
+
+    soup = driver_helper(url, wait_class_name, source)
+
+    events = []
+    
+    event_containers = soup.find_all("div", class_="lw_cal_event_list")
+    for event_list in event_containers:
+        event_items = event_list.find_all("div", class_= "lw_cal_event")
+        for item in event_items:
+                source = source
+                id = len(events) + 1 # applicable for any scraping
+                title = get_event_title(item, source) # done for Brown
+                description = get_event_description_and_date(item, source).description
+                image = get_image(item, source)
+                date = get_event_description_and_date(item, source).date
+                time = get_event_time(item, source)
+                attendees = 0
+                location = get_location(item, source)
+                event = Event(source, id, title, description, image, date, time, 
+                            attendees, location)
+
+                events.append(event)
+
+    return events
+
+
 def scrape_eventbrite_events():
     # Fetches events from Providence EventBrite and parses them 
     url = "https://www.eventbrite.com/d/ri--providence/all-events/"
     events = []
     ids = set()
+    
     
     try:
         response = requests.get(url)
@@ -143,6 +216,56 @@ def get_event_title(event, source: Source) -> str:
             return a.get('aria-label', 'No title')
     return "No Event Name"
 
+def get_event_description_and_date(event, source: Source) -> Description_and_Date:
+    """
+    Parses every event and goes to the specicific event url and parses the 
+    first sentence of the description.
+    """
+    if source == Source.BROWN:
+        event_url = event.find("a")["href"]
+        full_url = "https://events.brown.edu" + event_url  # Make the URL absolute
+
+        driver = get_driver()
+        try: 
+         driver.get(full_url)
+        except WebDriverException as e:
+            print(f"Failed to navigate to {full_url}: {e}")
+            return Description_and_Date("No description available", "No date available")
+
+
+    
+        try:
+            WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "lw_calendar_event_description"))
+        )
+        except TimeoutException:
+            print(f"Timeout Description not found for event at {full_url}")
+            return Description_and_Date("No description available", "No date available")
+
+
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+    
+        description_tag = soup.find("div", class_="lw_calendar_event_description")
+        description_content = "No description available"
+        if description_tag:
+            description_text = description_tag.get_text(strip=True)
+            if len(description_text) >= 1: 
+                description_content = (
+                    description_text.replace("Ph.D", "PhD").split(
+                    ".")[0] + "." if description_text else "No description available"
+                )
+          
+        date_tag = soup.find("h5", id="lw_cal_this_day")
+        event_date = "Date Not Found; Please Visit: " + event_url
+        if date_tag: 
+            date_text = "".join([part.strip() for part in date_tag.stripped_strings])
+            event_date = date_text
+
+        return Description_and_Date(description_content, date_text)
+        
+        
+
+
 def get_event_time(event, source: Source) -> str:
     if source == Source.BROWN:
         time_tag = event.find("span", class_="lw_start_time")
@@ -157,6 +280,7 @@ def get_event_time(event, source: Source) -> str:
     return None
 
 def get_location(event, source: Source) -> Location:
+
     if source == Source.BROWN:
         virtual_checker = event.find("section", class_="lw_events_online")
         physical_checker = event.find("a", class_="lw_cal_location_link")
@@ -208,15 +332,32 @@ def save_events_json(events, filename='events.json'):
     with open(filename, 'w') as f:
         json.dump([e.to_json() for e in events], f, indent=2)
 
+
+scrape_events(Source.BROWN)
+
+
+def main():
+    if len(sys.argv) < 2:
+        print(json.dumps({"result": "error", "error": "Source parameter is required"}))
+        sys.exit(1)
+    
+    source = sys.argv[1]
+
+    try:
+        if source.lower() == "brown":
+            brown_events = scrape_events(Source.BROWN)
+            save_events_json(brown_events)
+
+
+        elif source.lower() == "eventbrite":
+            eventbrite_events = scrape_eventbrite_events()
+            save_events_json(eventbrite_events)
+
+    except Exception as e:
+        print(json.dumps({"result": "error","error": str(e)}))
+        sys.exit(1)
+
+
+
 if __name__ == "__main__":
-    # Scrape from both sources
-    brown_events = scrape_events(Source.BROWN)
-    eventbrite_events = scrape_eventbrite_events()
-    
-    # Combines all events from both sources 
-    all_events = brown_events + eventbrite_events
-    
-    # Save to JSON file
-    save_events_json(all_events)
-    
-    print(f"Scraped {len(brown_events)} Brown events and {len(eventbrite_events)} Eventbrite events")
+    main()
