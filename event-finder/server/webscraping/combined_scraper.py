@@ -77,8 +77,11 @@ class Description_and_Date:
 brown_url = "https://events.brown.edu/event/"
 
 def get_driver():
-    chrome_options = Options()
-    chrome_options.add_argument('--headless')  # Run in headless mode
+    chrome_options = webdriver.ChromeOptions()
+    # Add headless mode
+    chrome_options.add_argument("--headless")  
+
+    # Create the driver with the options
     service = ChromeService(ChromeDriverManager().install())
     return webdriver.Chrome(service=service, options=chrome_options)
 
@@ -124,23 +127,23 @@ def scrape_events(source: Source):
 
     events = []
     
-    event_containers = soup.find_all("div", class_="lw_cal_event_list")
-    for event_list in event_containers:
-        event_items = event_list.find_all("div", class_= "lw_cal_event")
-        for item in event_items:
-                source = source
-                id = len(events) + 1 # applicable for any scraping
-                title = get_event_title(item, source) # done for Brown
-                description = get_event_description_and_date(item, source).description
-                image = get_image(item, source)
-                date = get_event_description_and_date(item, source).date
-                time = get_event_time(item, source)
-                attendees = 0
-                location = get_location(item, source)
-                event = Event(source, id, title, description, image, date, time, 
-                            attendees, location)
-
-                events.append(event)
+    #event_containers = soup.find_all("div", class_="lw_cal_event_list")
+    #or event_list in event_containers:
+    event_items = soup.find_all("div", class_= "lw_cal_event")
+    for item in event_items:
+        source = source
+        id = len(events) + 1 # applicable for any scraping
+        title = get_event_title(item, source) # done for Brown
+        description = get_event_description_and_date(item, source).description
+        image = get_image(item, source)
+        date = get_event_description_and_date(item, source).date
+        time = get_event_time(item, source)
+        attendees = 0
+        location = get_location(item, source)
+        event = Event(source, id, title, description, image, date, time,
+                      attendees, location)
+        
+        events.append(event)
 
     return events
 
@@ -342,6 +345,8 @@ def main():
         sys.exit(1)
     
     source = sys.argv[1]
+
+    print(f"Scraped Data Loading . . .")
 
     try:
         if source.lower() == "brown":
