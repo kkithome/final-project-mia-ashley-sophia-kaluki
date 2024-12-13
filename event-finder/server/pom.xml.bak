@@ -19,7 +19,7 @@
     <sortpom.version>3.0.0</sortpom.version>
 
     <!-- Spotless -->
-    <spotless.version>2.22.8</spotless.version>
+    <spotless.version>2.43.0</spotless.version>
   </properties>
 
   <dependencies>
@@ -48,7 +48,6 @@
            Spark is most commonly used to create APIs and websites.
     -->
 
-
     <dependency>
       <groupId>com.sparkjava</groupId>
       <artifactId>spark-core</artifactId>
@@ -70,6 +69,13 @@
       <version>9.2.0</version>
     </dependency>
 
+    <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>2.0.16</version>
+    </dependency>
+
     <!--
            JUnit is a unit testing library for Java.
     -->
@@ -79,6 +85,7 @@
       <version>5.4.0</version>
       <scope>test</scope>
     </dependency>
+
   </dependencies>
   <build>
     <plugins>
@@ -340,3 +347,4 @@
     </plugins>
   </reporting>
 </project>
+

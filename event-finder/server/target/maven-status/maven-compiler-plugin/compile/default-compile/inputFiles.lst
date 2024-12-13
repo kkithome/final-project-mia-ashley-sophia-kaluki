@@ -1,0 +1,10 @@
+/Users/sophialloydgeorge/final-project-mia-ashley-sophia-kaluki/event-finder/server/src/main/java/edu/brown/cs/student/main/server/handlers/AddWordHandler.java
+/Users/sophialloydgeorge/final-project-mia-ashley-sophia-kaluki/event-finder/server/src/main/java/edu/brown/cs/student/main/server/handlers/ListWordsHandler.java
+/Users/sophialloydgeorge/final-project-mia-ashley-sophia-kaluki/event-finder/server/src/main/java/edu/brown/cs/student/main/server/handlers/Event.java
+/Users/sophialloydgeorge/final-project-mia-ashley-sophia-kaluki/event-finder/server/src/main/java/edu/brown/cs/student/main/server/Server.java
+/Users/sophialloydgeorge/final-project-mia-ashley-sophia-kaluki/event-finder/server/src/main/java/edu/brown/cs/student/main/server/handlers/Utils.java
+/Users/sophialloydgeorge/final-project-mia-ashley-sophia-kaluki/event-finder/server/src/main/java/edu/brown/cs/student/main/server/handlers/ClearUserHandler.java
+/Users/sophialloydgeorge/final-project-mia-ashley-sophia-kaluki/event-finder/server/src/main/java/edu/brown/cs/student/main/server/handlers/MockEventService.java
+/Users/sophialloydgeorge/final-project-mia-ashley-sophia-kaluki/event-finder/server/src/main/java/edu/brown/cs/student/main/server/storage/StorageInterface.java
+/Users/sophialloydgeorge/final-project-mia-ashley-sophia-kaluki/event-finder/server/src/main/java/edu/brown/cs/student/main/server/handlers/EventHandler.java
+/Users/sophialloydgeorge/final-project-mia-ashley-sophia-kaluki/event-finder/server/src/main/java/edu/brown/cs/student/main/server/storage/FirebaseUtilities.java

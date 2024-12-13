@@ -2,14 +2,9 @@ package edu.brown.cs.student.main.server;
 
 import static spark.Spark.after;
 
-import edu.brown.cs.student.main.server.handlers.AddWordHandler;
-import edu.brown.cs.student.main.server.handlers.ClearUserHandler;
 import edu.brown.cs.student.main.server.handlers.EventHandler;
-import edu.brown.cs.student.main.server.handlers.ListWordsHandler;
 import edu.brown.cs.student.main.server.handlers.MockEventService;
-import edu.brown.cs.student.main.server.storage.FirebaseUtilities;
 import edu.brown.cs.student.main.server.storage.StorageInterface;
-import java.io.IOException;
 import spark.Filter;
 import spark.Spark;
 
@@ -32,11 +27,11 @@ public class Server {
     StorageInterface firebaseUtils;
     try {
       mockEventService = new MockEventService();
-    //   firebaseUtils = new FirebaseUtilities();
+      //   firebaseUtils = new FirebaseUtilities();
 
-     // Spark.get("add-word", new AddWordHandler(firebaseUtils));
-     // Spark.get("list-words", new ListWordsHandler(firebaseUtils));
-     // Spark.get("clear-user", new ClearUserHandler(firebaseUtils));
+      // Spark.get("add-word", new AddWordHandler(firebaseUtils));
+      // Spark.get("list-words", new ListWordsHandler(firebaseUtils));
+      // Spark.get("clear-user", new ClearUserHandler(firebaseUtils));
       Spark.get("events", new EventHandler(mockEventService));
 
       Spark.notFound(

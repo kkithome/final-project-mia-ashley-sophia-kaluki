@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 
-export default function UserProfile() {
+export default function UserP() {
   const { user } = useUser();
   const [isAnonymous, setIsAnonymous] = useState(false);
 
@@ -23,7 +23,7 @@ export default function UserProfile() {
 
   return (
     <div className="min-h-screen bg-customBrown text-white p-6">
-      <div className="flex justify-center mt-6">
+      <div className="flex justify-start mt-6">
         <button
           onClick={backToMain}
           className="paytone-one bg-customRed text-white rounded-lg px-4 py-2 text-xl"
@@ -56,25 +56,36 @@ export default function UserProfile() {
               />
             )}
             <h2 className="paytone-one text-3xl">{user?.fullName || "Anon"}</h2>
+            {/* Create event button — delay for now */}
+            {/* <button
+              onClick={() => navigate("/create-event")}
+              className="paytone-one bg-customRed text-white rounded-lg px-4 py-2 text-xl mt-4"
+            >
+              Create Event
+            </button> */}
           </>
         )}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
-        <div className="bg-customRed p-6 rounded-lg">
-          <h3 className="paytone-one text-2xl mb-4">Favorited Events</h3>
+        <div className="bg-customLightBrown p-6 rounded-lg">
+          <h3 className="paytone-one text-2xl mb-4 text-customRed">
+            Favorited Events
+          </h3>
           <ul className="list-disc ml-6 space-y-2">
             {favoritedEvents.map((event) => (
-              <li key={event.id} className="text-md">
+              <li key={event.id} className="text-md text-black">
                 {event.title}
               </li>
             ))}
           </ul>
         </div>
-        <div className="bg-customRed p-6 rounded-lg">
-          <h3 className="paytone-one text-2xl mb-4">Upcoming Events</h3>
+        <div className="bg-customLightBrown p-6 rounded-lg">
+          <h3 className="paytone-one text-2xl mb-4 text-customRed">
+            Upcoming Events
+          </h3>
           <ul className="list-disc ml-6 space-y-2">
             {upcomingEvents.map((event) => (
-              <li key={event.id} className="text-md">
+              <li key={event.id} className="text-md text-black">
                 {event.title}
               </li>
             ))}

@@ -1,8 +1,10 @@
 from bs4 import BeautifulSoup
-from requests import get
 from collections import Counter
 import requests
 import time
+import sys
+import json
+
 from enum import Enum
 
 # Selenium imports
@@ -11,7 +13,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
-from selenium.common.exceptions import StaleElementReferenceException
+from selenium.common.exceptions import WebDriverException
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
@@ -24,7 +27,7 @@ To make this work a few installations and other things must be set up:
     - run: python3 --version
 2. Create and Activate a Virtual Environment
     - run python3 -m venv event-finder
-    - run source venv/bin/activate
+    - run source /bin/activate
 
 3. Install the needed dependencies:
     - pip3 install -r requirements.txt
@@ -60,7 +63,7 @@ class Source(Enum):
 
 
 class Location:
-    def __init__(self, name, lat:None, long:None, url:None):
+    def __init__(self, name, lat:str, long:str, url:str):
         self.name = name
         self.lat = lat
         self.long = long
@@ -69,7 +72,7 @@ class Location:
 
 class Event:
     def __init__(self, source: Source, id: int, title: str, description: str, image: str, 
-                 date: None, time: str, attendees: int, location: Location):
+                 date: str, time: str, attendees: int, location: Location):
         self.source = source
         self.id = id
         self.title = title
@@ -79,6 +82,18 @@ class Event:
         self.time = time
         self.attendees = attendees
         self.location = location
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "image": self.image,
+            "date": self.date,
+            "time": self.time,
+            "attendees": self.attendees,
+            "location": self.location
+            }
 
 class Description_and_Date:
     def __init__(self, description, date):
@@ -119,6 +134,7 @@ def scrape_events(source: Source):
     Fetches events from the source (Events@Brown, EventBrite, or Go Providence)
     and parses them into an instance of the Activity class
     """
+
     
     if source == Source.BROWN:
         url = "https://events.brown.edu/all"
@@ -133,27 +149,30 @@ def scrape_events(source: Source):
         wait_class_name = "content_list"
     soup = driver_helper(url, wait_class_name, source)
 
+
+
+
+
+
     events = []
     
     event_containers = soup.find_all("div", class_="lw_cal_event_list")
-
     for event_list in event_containers:
         event_items = event_list.find_all("div", class_= "lw_cal_event")
+        for item in event_items:
+                source = source
+                id = len(events) + 1 # applicable for any scraping
+                title = get_event_title(item, source) # done for Brown
+                description = get_event_description_and_date(item, source).description
+                image = get_image(item, source)
+                date = get_event_description_and_date(item, source).date
+                time = get_event_time(item, source)
+                attendees = 0
+                location = get_location(item, source)
+                event = Event(source, id, title, description, image, date, time, 
+                            attendees, location)
 
-
-    for item in event_items:
-        source = source
-        id = len(events) + 1 # applicable for any scraping
-        title = get_event_title(item, source) # done for Brown
-        description = get_event_description_and_date(item, source).description
-        image = get_image(item, source)
-        date = get_event_description_and_date(item, source).date
-        time = get_event_time(item, source)
-        attendees = 0
-        location = get_location(item, source)
-        event = Event(source, id, title, description, image, date, time, 
-                      attendees, location)
-        events.append(event)
+                events.append(event)
 
     return events
 
@@ -184,20 +203,34 @@ def get_event_description_and_date(event, source: Source) -> Description_and_Dat
         full_url = "https://events.brown.edu" + event_url  # Make the URL absolute
 
         driver = get_driver()
-        driver.get(full_url)
+        try: 
+         driver.get(full_url)
+        except WebDriverException as e:
+            print(f"Failed to navigate to {full_url}: {e}")
+            return Description_and_Date("No description available", "No date available")
+
+
     
-        WebDriverWait(driver, 10).until(
+        try:
+            WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "lw_calendar_event_description"))
         )
+        except TimeoutException:
+            print(f"Timeout Description not found for event at {full_url}")
+            return Description_and_Date("No description available", "No date available")
+
 
         soup = BeautifulSoup(driver.page_source, 'html.parser')
     
         description_tag = soup.find("div", class_="lw_calendar_event_description")
+        description_content = "No description available"
         if description_tag:
             description_text = description_tag.get_text(strip=True)
             if len(description_text) >= 1: 
-                first_sentence = description_text.replace("Ph.D", "PhD").split(
-                    ".")[0] + "." if description_text else "No description available."
+                description_content = (
+                    description_text.replace("Ph.D", "PhD").split(
+                    ".")[0] + "." if description_text else "No description available"
+                )
           
         date_tag = soup.find("h5", id="lw_cal_this_day")
         event_date = "Date Not Found; Please Visit: " + event_url
@@ -205,7 +238,7 @@ def get_event_description_and_date(event, source: Source) -> Description_and_Dat
             date_text = "".join([part.strip() for part in date_tag.stripped_strings])
             event_date = date_text
 
-        return Description_and_Date(first_sentence, date_text)
+        return Description_and_Date(description_content, date_text)
         
 
         
@@ -248,14 +281,14 @@ def get_location(event, source: Source) -> Location:
             if latitude and longitude:
                 return Location(location_name, latitude, longitude, None)
             else:
-                return Location(location_name, None, None, None)
+                return Location(location_name, "", "", "")
 
         if (virtual_checker and not physical_checker):
             location_name = "virtual"
             event_url_endpoints = event.find("a", href=True)
             event_endpoints = event_url_endpoints['href']
             event_url = brown_url + event_endpoints
-            return Location(location_name, None, None, event_url)
+            return Location(location_name, "", "", event_url)
         
         if (physical_checker and virtual_checker):
             location_name = physical_checker.get_text(strip=True) + " Virtual"
@@ -285,20 +318,23 @@ def get_image(event, source: Source) -> str:
 
 scrape_events(Source.BROWN)
 
-    
 
-    
+def main():
+    if len(sys.argv) < 2:
+        print(json.dumps({"result": "error", "error": "Source parameter is required"}))
+        sys.exit(1)
 
+    source = sys.argv[1]
 
+    try:
+        event_list = scrape_events(Source[source.upper()])
+        event_json = [event.to_dict() for event in event_list if isinstance(event, Event)]
+        output = {"events": event_json}
+        print(output)
         
+    except Exception as e:
+        print(json.dumps({"result": "error","error": str(e)}))
+        sys.exit(1)
 
-
-
-
-
- 
-
-
-
-
-
+if __name__ == "__main__":
+    main()
