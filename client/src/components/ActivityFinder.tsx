@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Mapbox from "./Mapbox";
 import Activities from "./Activities";
 import '../styles/App.css';
@@ -21,6 +21,10 @@ export default function ActivitiesFinder() {
   const [searchResults, setSearchResults] = useState<Activity[]>([]); 
   const [searchInput, setSearchTerm] = useState<any>(null); 
 
+  // useEffect(() => {
+  //   setActivities(searchResults);
+  // }, [searchResults]);
+
   const searchActivities = async (keyword: string = "", filters: any = {}) => {
     let { isOnCampus, startDate, endDate, startTime, category } = filters;
     const searchCollection = collection(db, "activities");
@@ -32,18 +36,19 @@ export default function ActivitiesFinder() {
     }
   
     console.log(startDate); 
+    console.log(category); 
     try {
       let baseQuery = query(searchCollection, where("date", ">=", startDate));
       console.log("Base query after startDate:", baseQuery);
   
-      if (endDate) {
-        baseQuery = query(baseQuery, where("date", "<=", endDate));
-      }
+      // if (endDate) {
+      //   baseQuery = query(baseQuery, where("date", "<=", endDate));
+      // }
   
-      if (isOnCampus !== undefined) {
-        const locationFilter = isOnCampus ? "on-campus" : "off-campus";
-        baseQuery = query(baseQuery, where("location", "==", locationFilter));
-      }
+      // if (isOnCampus !== undefined) {
+      //   const locationFilter = isOnCampus ? "on-campus" : "off-campus";
+      //   baseQuery = query(baseQuery, where("location", "==", locationFilter));
+      // }
   
       if (category) {
         baseQuery = query(baseQuery, where("category", "==", category));
@@ -65,15 +70,12 @@ export default function ActivitiesFinder() {
         category: doc.data().category,
         onCampus: doc.data().onCampus,
       }));
+
+      console.log(`fetched activities: ${fetchedActivities}`); 
   
       if (keyword) {
         console.log("Filtering activities by keyword:", keyword);
         console.log(`fetched activities: ${fetchedActivities}`); 
-      
-        // Log titles and descriptions before filtering
-        fetchedActivities.forEach((activity) => {
-          console.log(`Before Filtering: Title: ${activity.title}, Description: ${activity.description}`);
-        });
       
         fetchedActivities = fetchedActivities.filter(
           (activity) =>
@@ -81,19 +83,15 @@ export default function ActivitiesFinder() {
             activity.description.toLowerCase().includes(keyword.toLowerCase())
         );
       
-        // Check if filtered data exists
-        if (fetchedActivities.length === 0) {
-          console.log("No activities match the keyword");
+        if (fetchedActivities.length > 0) {
+          setSearchResults(fetchedActivities);
         } else {
-          console.log("Filtered activities:");
-          fetchedActivities.forEach((activity) => {
-            console.log(`After Filtering: Title: ${activity.title}, Description: ${activity.description}`);
-          });
+          console.log("No activities match the keyword");
         }
-      }      
-  
-      setSearchResults(fetchedActivities);
-      console.log(fetchedActivities);
+      }   
+      else {
+        setSearchResults(fetchedActivities);
+      }   
     } catch (error) {
       console.error("Error fetching activities:", error);
     }

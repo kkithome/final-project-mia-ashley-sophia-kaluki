@@ -5,7 +5,7 @@ import '../styles/index.css';
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
-import { Activity } from "../activityData";
+import { activities as fileActivities, Activity } from "../activityData";
 import firebaseConfig2 from '../resources/firebase2.js';
 
 interface ActivitiesProps {
@@ -29,7 +29,7 @@ export {db};
  * add the event to their calendar.
  */
 const createICSFile = (activity: Activity) => {
-  const startDateTime = new Date(`${activity.date}T${convertTo24Hour(activity.time)}`).toISOString();
+  const startDateTime = new Date(`${activity.date}T${convertTo24Hour(activity.startTime)}`).toISOString();
   const endDateTime = new Date(
     new Date(startDateTime).getTime() + 60 * 60 * 1000
   ).toISOString();
@@ -117,13 +117,14 @@ export default function Activities({ activities }: ActivitiesProps) {
   const pushToFirestore = async () => {
     const activitiesCollection = collection(db, "activities");
     try {
+      // Get existing activities in Firestore
       const existingActivitiesSnapshot = await getDocs(activitiesCollection);
-
       const existingActivityIds = new Set(
         existingActivitiesSnapshot.docs.map((doc) => doc.data().id)
       );
 
-      for (const activity of activities2) {
+      // Push missing activities from the file
+      for (const activity of fileActivities) {
         if (!existingActivityIds.has(activity.id)) {
           await addDoc(activitiesCollection, activity);
           console.log(`Activity with ID ${activity.id} added to Firestore.`);
@@ -131,17 +132,17 @@ export default function Activities({ activities }: ActivitiesProps) {
           console.log(`Activity with ID ${activity.id} already exists.`);
         }
       }
-
-      // alert("Activities processed successfully!");
     } catch (error) {
       console.error("Error uploading activities:", error);
-      // alert("Failed to upload activities.");
     }
   };
 
   useEffect(() => {
-    pushToFirestore();
-    getActivities(); 
+    const initializeActivities = async () => {
+      await pushToFirestore();
+      await getActivities();
+    };
+    initializeActivities();
   }, []);
 
   

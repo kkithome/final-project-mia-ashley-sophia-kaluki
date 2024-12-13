@@ -35,7 +35,7 @@ export interface Activity {
       description:
         "Step into a world where stories unfold through the power of movement. The 2024 Fall Dance Concert features ...see more",
       image: "https://taps.brown.edu/sites/default/files/2024-09/IMG_9874.JPG",
-      date: "2024-11-24",
+      date: "2026-11-24",
       startTime: "1:00 PM",
       endTime: "3:00",
       attendees: ["Emma", "Ryan", "Martin"],
