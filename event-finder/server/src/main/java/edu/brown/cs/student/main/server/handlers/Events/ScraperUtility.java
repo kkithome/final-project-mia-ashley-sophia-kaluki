@@ -30,7 +30,6 @@ public class ScraperUtility {
       output.append(line);
     }
 
-
     int exitCode = process.waitFor();
     if (exitCode == 0) {
       System.out.println("Raw scraper output: " + output);
@@ -45,7 +44,6 @@ public class ScraperUtility {
     Moshi moshi = new Moshi.Builder().build();
     JsonAdapter<List<Event>> jsonAdapter =
         moshi.adapter(Types.newParameterizedType(List.class, Event.class));
-    jsonAdapter.lenient();
-    return jsonAdapter.fromJson(json);
+    return jsonAdapter.fromJson(String.valueOf(json));
   }
 }

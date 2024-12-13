@@ -1,17 +1,37 @@
 package edu.brown.cs.student.main.server.Objects;
 
+import com.squareup.moshi.Json;
+
 public class Event {
+
+  @Json(name = "id")
   private int id;
+
+  @Json(name = "title")
   private String title;
+
+  @Json(name = "description")
   private String description;
+
+  @Json(name = "image")
   private String image;
+
+  @Json(name = "date")
   private String date;
+
+  @Json(name = "time")
   private String time;
+
+  @Json(name = "attendees")
   private int attendees;
+
+  @Json(name = "location")
   private Location location;
 
+  @Json(name = "category")
   private String category;
 
+  @Json(name = "paid")
   private boolean paid;
 
   public Event(

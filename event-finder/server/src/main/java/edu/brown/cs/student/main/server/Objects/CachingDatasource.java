@@ -34,7 +34,6 @@ public class CachingDatasource implements Route {
     if (source == null) {
       responseMap.put("result", "error_bad_request");
       responseMap.put("message", "Source cannot be null");
-      response.status(400); // Bad request
       return new Moshi.Builder().build().adapter(Map.class).toJson(responseMap);
     }
 
