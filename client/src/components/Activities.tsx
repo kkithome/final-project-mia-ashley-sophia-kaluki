@@ -2,20 +2,34 @@ import { useEffect, useState } from "react";
 import '../output.css';
 import '../styles/App.css';
 import '../styles/index.css';
-import { db } from "./App";
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
 import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
-import { activities, Activity } from "../activityData";
+import { activities as fileActivities, Activity } from "../activityData";
+import firebaseConfig2 from '../resources/firebase2.js';
 
-// hii I moved the mock data to a new file to keep things more organized
-// as I will be adding more data (check out activitiyData.ts in src)
+interface ActivitiesProps {
+  activities: Activity[];
+}
 
+let app;
+if (!app) {
+  console.log("Database initialized"); 
+  app = initializeApp(firebaseConfig2, "activities"); 
+} else {
+  app = getApp(); 
+  console.log("App already created"); 
+}
+const db = getFirestore(app);
+
+export {db}; 
 
 /**
  * This method creates a .ics file download so the user can 
  * add the event to their calendar.
  */
 const createICSFile = (activity: Activity) => {
-  const startDateTime = new Date(`${activity.date}T${convertTo24Hour(activity.time)}`).toISOString();
+  const startDateTime = new Date(`${activity.date}T${convertTo24Hour(activity.startTime)}`).toISOString();
   const endDateTime = new Date(
     new Date(startDateTime).getTime() + 60 * 60 * 1000
   ).toISOString();
@@ -57,44 +71,85 @@ const convertTo24Hour = (time: string) => {
   return `${hour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:00`;
 };
 
-/**
- * This function pushes a list of prepopulated event data to the firebase.
- * It goes through the list, looks at the event IDs, and only pushes
- * IDs that are new so there aren't duplicate events.
- */
-const pushToFirestore = async () => {
-  const activitiesCollection = collection(db, "activities");
-  try {
-    const existingActivitiesSnapshot = await getDocs(activitiesCollection);
+export default function Activities({ activities }: ActivitiesProps) {
+  const [activities2, setActivities] = useState<Activity[]>([]); 
 
-    const existingActivityIds = new Set(
-      existingActivitiesSnapshot.docs.map((doc) => doc.data().id)
-    );
-
-    for (const activity of activities) {
-      if (!existingActivityIds.has(activity.id)) {
-        await addDoc(activitiesCollection, activity);
-        console.log(`Activity with ID ${activity.id} added to Firestore.`);
-      } else {
-        console.log(`Activity with ID ${activity.id} already exists.`);
-      }
-    }
-
-    // alert("Activities processed successfully!");
-  } catch (error) {
-    console.error("Error uploading activities:", error);
-    // alert("Failed to upload activities.");
-  }
-};
-
-export default function Activities() {
   useEffect(() => {
-    pushToFirestore();
+    setActivities(activities);
+  }, [activities]);
+
+  /**
+   * Retrieves the activities from the firebase
+   */
+  const getActivities = async () => {
+    const collection2 = collection(db, "activities"); 
+    try {
+      const existingActivitiesSnapshot = await getDocs(collection2);
+      console.log(existingActivitiesSnapshot); 
+      const fetchedActivities: Activity[] = existingActivitiesSnapshot.docs.map((doc) => ({
+        id: doc.data().id,
+        title: doc.data().title,
+        description: doc.data().description,
+        date: doc.data().date,
+        startTime: doc.data().startTime,
+        endTime: doc.data().endTime,
+        image: doc.data().image,
+        location: doc.data().location,
+        attendance: doc.data().attendance,
+        attendees: doc.data().attendees,
+        time: doc.data().time,
+        category: doc.data().category,
+        onCampus: doc.data().onCampus,
+      }));
+      setActivities(fetchedActivities); 
+      console.log(fetchedActivities); 
+    }
+    catch (error) {
+      console.error("Error fetching activities:", error);
+    }
+  };
+
+  /**
+   * This function pushes a list of prepopulated event data to the firebase.
+   * It goes through the list, looks at the event IDs, and only pushes
+   * IDs that are new so there aren't duplicate events.
+   */
+  const pushToFirestore = async () => {
+    const activitiesCollection = collection(db, "activities");
+    try {
+      // Get existing activities in Firestore
+      const existingActivitiesSnapshot = await getDocs(activitiesCollection);
+      const existingActivityIds = new Set(
+        existingActivitiesSnapshot.docs.map((doc) => doc.data().id)
+      );
+
+      // Push missing activities from the file
+      for (const activity of fileActivities) {
+        if (!existingActivityIds.has(activity.id)) {
+          await addDoc(activitiesCollection, activity);
+          console.log(`Activity with ID ${activity.id} added to Firestore.`);
+        } else {
+          console.log(`Activity with ID ${activity.id} already exists.`);
+        }
+      }
+    } catch (error) {
+      console.error("Error uploading activities:", error);
+    }
+  };
+
+  useEffect(() => {
+    const initializeActivities = async () => {
+      await pushToFirestore();
+      await getActivities();
+    };
+    initializeActivities();
   }, []);
+
+  
 
   return (
     <div className="flex flex-row items-center justify-center flex-wrap gap-8 space-x-5 md:space-x-8">
-      {activities.map((activity) => (
+      {activities2.map((activity) => (
         <div
           key={activity.id}
           className="border border-customLightBrown bg-customLightBrown rounded-2xl p-4 w-96 h-130 text-center space-y-2"
@@ -114,7 +169,7 @@ export default function Activities() {
                 <strong>Date:</strong> {activity.date}
               </p>
               <p>
-                <strong>Time:</strong> {activity.time}
+                <strong>Time:</strong> {activity.startTime}
               </p>
             </div>
             <p>
