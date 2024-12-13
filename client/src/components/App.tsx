@@ -5,6 +5,7 @@ import "../styles/App.css";
 import "../styles/index.css";
 import "../output.css";
 import ActivityFinder from "./ActivityFinder";
+import ActivityPage from "./ActivityPage";
 import Home from "./Home";
 import Footer from "./Footer";
 import ThreeBearsImage from "../assets/Top3Bears.png";
@@ -87,6 +88,7 @@ function App() {
                   <Route path="/" element={<Home />} />
                   <Route path="/activity-finder" element={<ActivityFinder />} />
                   <Route path="/user-profile" element={<UserP />} />
+                  <Route path="/activity/:id" element={<ActivityPage />} />
                 </Routes>
               </div>
               <Footer />
