@@ -18,7 +18,7 @@ from selenium.common.exceptions import WebDriverException
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.service import Sevice as ChromeService
+from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
 
 class Source(Enum):
@@ -92,7 +92,7 @@ class Time:
 
     def to_json(self):
         return {
-            "start": self.start
+            "start": self.start,
             "end": self.end
         }
 
@@ -163,8 +163,10 @@ def scrape_events(source: Source):
         attendance = 0
         attendees = []
         location = get_location(item, source)
-        event = Event(source, id, title, description, image, date, time,
-                      attendees, location)
+        onCampus = True
+        event = Event(source, id, title, description, image, date, start_time, 
+                      end_time, attendance,
+                      attendees, location, onCampus)
         
         events.append(event)
 
@@ -216,11 +218,13 @@ def scrape_eventbrite_events():
                 description="",  # We could fetch this from the event page if needed
                 image=img_url,
                 date=date_str,
-                time=None,  # Could be extracted from date_str if needed
-                attendees=0,
+                start_time=None,  # Could be extracted from date_str if needed
+                end_time=None,
+                attendance = 0,
+                attendees=[],
                 location=location,
                 category=category,
-                paid=paid
+                onCampus=False
             )
             
             events.append(event)
@@ -363,8 +367,7 @@ scrape_events(Source.BROWN)
 
 
 def main():
-   
- 
+
     if len(sys.argv) < 2:
         print(json.dumps({"result": "error", "error": "Source parameter is required"}))
         sys.exit(1)

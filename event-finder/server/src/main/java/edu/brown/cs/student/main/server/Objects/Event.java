@@ -1,6 +1,7 @@
 package edu.brown.cs.student.main.server.Objects;
 
 import com.squareup.moshi.Json;
+import java.util.List;
 
 public class Event {
 
@@ -19,11 +20,17 @@ public class Event {
   @Json(name = "date")
   private String date;
 
-  @Json(name = "time")
-  private String time;
+  @Json(name = "start_time")
+  private String start_time;
+
+  @Json(name = "end_time")
+  private String end_time;
+
+  @Json(name = "attendance")
+  private int attendance;
 
   @Json(name = "attendees")
-  private int attendees;
+  private List attendees;
 
   @Json(name = "location")
   private Location location;
@@ -31,8 +38,8 @@ public class Event {
   @Json(name = "category")
   private String category;
 
-  @Json(name = "paid")
-  private boolean paid;
+  @Json(name = "onCampus")
+  private boolean onCampus;
 
   public Event(
       int id,
@@ -40,21 +47,24 @@ public class Event {
       String description,
       String image,
       String date,
-      String time,
-      int attendees,
+      String start_time,
+      String end_time,
+      int attendance,
+      List attendees,
       Location location,
       String category,
-      boolean paid) {
+      boolean onCampus) {
     this.id = id;
     this.title = title;
     this.description = description;
     this.image = image;
     this.date = date;
-    this.time = time;
+    this.start_time = start_time;
+    this.end_time = end_time;
     this.attendees = attendees;
     this.location = location;
     this.category = category;
-    this.paid = paid;
+    this.onCampus = onCampus;
   }
 
   public int getId() {
@@ -77,11 +87,19 @@ public class Event {
     return this.date;
   }
 
-  public String getTime() {
-    return this.time;
+  public String getStart_time() {
+    return this.start_time;
   }
 
-  public int getAttendees() {
+  public String getEnd_time() {
+    return this.end_time;
+  }
+
+  public int getAttendance() {
+    return this.attendance;
+  }
+
+  public List getAttendees() {
     return this.attendees;
   }
 
@@ -93,8 +111,8 @@ public class Event {
     return this.category;
   }
 
-  public boolean isPaid() {
-    return this.paid;
+  public boolean getOnCampus() {
+    return this.onCampus;
   }
 
   public void setId(int id) {
@@ -117,12 +135,20 @@ public class Event {
     this.date = date;
   }
 
-  public void setTime(String time) {
-    this.time = time;
+  public void setStart_time(String start_time) {
+    this.start_time = start_time;
   }
 
-  public void setAttendees(int attendees) {
+  public void setEnd_time(String end_time) {
+    this.end_time = end_time;
+  }
+
+  public void setAttendees(List attendees) {
     this.attendees = attendees;
+  }
+
+  public void setAttendance(int attendance) {
+    this.attendance = attendance;
   }
 
   public void setLocation(Location location) {
@@ -133,7 +159,7 @@ public class Event {
     this.category = category;
   }
 
-  public void setPaid(boolean paid) {
-    this.paid = paid;
+  public void setOnCampus(boolean onCampus) {
+    this.onCampus = onCampus;
   }
 }
