@@ -74,6 +74,12 @@ class Description_and_Date:
         self.description = description
         self.date = date
 
+    def to_json(self):
+        return {
+            "description": self.description,
+            "date": self.date
+        }
+
 brown_url = "https://events.brown.edu/event/"
 
 def get_driver():
@@ -124,10 +130,11 @@ def scrape_events(source: Source):
 
     events = []
     
-    #event_containers = soup.find_all("div", class_="lw_cal_event_list")
+    event_containers = soup.find_all("div", class_="lw_cal_event_list")
     #or event_list in event_containers:
-    event_items = soup.find_all("div", class_= "lw_cal_event")
-    for item in event_items:
+    #event_items = soup.find_all("div", class_= "lw_cal_event")
+    for item in event_containers:
+        # remember to change back to event items
         source = source
         id = len(events) + 1 # applicable for any scraping
         title = get_event_title(item, source) # done for Brown
@@ -337,23 +344,30 @@ scrape_events(Source.BROWN)
 
 
 def main():
+   
+ 
     if len(sys.argv) < 2:
         print(json.dumps({"result": "error", "error": "Source parameter is required"}))
         sys.exit(1)
     
     source = sys.argv[1]
 
-    print(f"Scraped Data Loading . . .")
-
     try:
-        if source.lower() == "brown":
-            brown_events = scrape_events(Source.BROWN)
-            save_events_json(brown_events)
+        brown_events = scrape_events(Source.BROWN)
+        
+        eventbrite_events = scrape_eventbrite_events()
 
+        if source.lower() == "brown":
+            json_ready = json.dumps([event.to_json() for event in brown_events]).encode('utf-8').decode('unicode_escape')
+            print(json_ready)
+            return json_ready
+            
 
         elif source.lower() == "eventbrite":
-            eventbrite_events = scrape_eventbrite_events()
-            save_events_json(eventbrite_events)
+            return eventbrite_events
+
+        elif source.lower() == "both": 
+            return brown_events + eventbrite_events
 
     except Exception as e:
         print(json.dumps({"result": "error","error": str(e)}))
