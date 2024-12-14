@@ -3,6 +3,10 @@ package edu.brown.cs.student.main.server;
 import static spark.Spark.after;
 
 import edu.brown.cs.student.main.server.handlers.Events.ScraperHandler;
+import edu.brown.cs.student.main.server.handlers.Pins.ClearAllPinsHandler;
+import edu.brown.cs.student.main.server.handlers.Pins.FetchPinsHandler;
+import edu.brown.cs.student.main.server.handlers.Pins.SavePinsHandler;
+import edu.brown.cs.student.main.server.handlers.Users.ClearUserHandler;
 import edu.brown.cs.student.main.server.storage.FirebaseUtilities;
 import edu.brown.cs.student.main.server.storage.StorageInterface;
 import spark.Filter;
@@ -12,7 +16,7 @@ import spark.Spark;
 public class Server {
 
   public static void setUpServer() {
-    int port = 3233;
+    int port = 3232;
     Spark.port(port);
 
     after(
@@ -27,11 +31,10 @@ public class Server {
 
       firebaseUtils = new FirebaseUtilities();
       Spark.get("/scrape", new ScraperHandler());
-
-      // Spark.get("add-word", new AddWordHandler(firebaseUtils));
-      // Spark.get("list-words", new ListWordsHandler(firebaseUtils));
-      // Spark.get("clear-user", new ClearUserHandler(firebaseUtils));
-
+      Spark.get("/fetch-pins", new FetchPinsHandler(firebaseUtils));
+      Spark.get("/save-pins", new SavePinsHandler(firebaseUtils));
+      Spark.get("/clear-all", new ClearAllPinsHandler(firebaseUtils));
+      Spark.get("/clear-user", new ClearUserHandler(firebaseUtils));
       Spark.notFound(
           (request, response) -> {
             response.status(404); // Not Found
