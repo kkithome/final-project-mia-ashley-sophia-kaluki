@@ -1,0 +1,92 @@
+[
+  {
+    "source": "BROWN",
+    "id": 1,
+    "title": "Under Analysis: On the History of Truth and the Subject of Science 3-day Conference",
+    "description": "Under Analysis: On the History of Truth and the Subject of SciencePresented by Joan Copjec and Kristina MendicinoDecember 12th 8:30am - 5:30pm Faculty Club, 1 Bannister StDecember 13th 8:30am - 5:30pm Faculty Club, 1 Bannister stDecember 14th 8:30am - 3:30pm Andrews House, 13 Brown Street, Room 110\u201cUnder Analysis: On the History of Truth and the Subject of Science\u201d is an international conference concerning the thinking that will have been made possible through Martin Heidegger\u2019s and Jacques Lacan\u2019s radical interrogations of truth and critical expositions of the modern subject of science.",
+    "image": "https://events.brown.edu/live/image/gid/48/width/200/height/200/crop/1/src_region/0,0,1700,2200/17337_Under_Analysis_poster.rev.1731006972.jpg",
+    "date": "December13, 2024",
+    "time": "8:30am - 2:00pm",
+    "attendees": 0,
+    "location": {
+      "name": "Faculty Club Virtual",
+      "latitude": "41.824809",
+      "longitude": "-71.403729",
+      "url": "https://events.brown.edu/event//event/300679-under-analysis-on-the-history-of-truth-and-"
+    },
+    "category": null,
+    "paid": false
+  },
+  {
+    "source": "BROWN",
+    "id": 2,
+    "title": "Under Analysis: On the History of Truth and the Subject of Science 3-day Conference",
+    "description": "Under Analysis: On the History of Truth and the Subject of SciencePresented by Joan Copjec and Kristina MendicinoDecember 12th 8:30am - 5:30pm Faculty Club, 1 Bannister StDecember 13th 8:30am - 5:30pm Faculty Club, 1 Bannister stDecember 14th 8:30am - 3:30pm Andrews House, 13 Brown Street, Room 110\u201cUnder Analysis: On the History of Truth and the Subject of Science\u201d is an international conference concerning the thinking that will have been made possible through Martin Heidegger\u2019s and Jacques Lacan\u2019s radical interrogations of truth and critical expositions of the modern subject of science.",
+    "image": "https://events.brown.edu/live/image/gid/48/width/200/height/200/crop/1/src_region/0,0,1700,2200/17337_Under_Analysis_poster.rev.1731006972.jpg",
+    "date": "December14, 2024",
+    "time": "8:30am - 5:00pm",
+    "attendees": 0,
+    "location": {
+      "name": "Andrews House",
+      "latitude": "41.823967",
+      "longitude": "-71.402338",
+      "url": null
+    },
+    "category": null,
+    "paid": false
+  },
+  {
+    "source": "BROWN",
+    "id": 3,
+    "title": "Sunday Morning Mass",
+    "description": "Please join us for Sunday Morning Mass every Sunday in Manning Chapel, hosted by the Brown-RISD Catholic Community.",
+    "image": "https://events.brown.edu/live/image/gid/35/width/200/height/200/crop/1/src_region/0,0,268,224/10859_COL_Logo_for_the_Curricular_Resource_Center_MP-1727_IC_ICON.rev.1675954936.jpg",
+    "date": "December15, 2024",
+    "time": "10:30am - 8:00pm",
+    "attendees": 0,
+    "location": {
+      "name": "Manning Chapel",
+      "latitude": "41.827526",
+      "longitude": "-71.402786",
+      "url": null
+    },
+    "category": null,
+    "paid": false
+  },
+  {
+    "source": "BROWN",
+    "id": 4,
+    "title": "Seniors: Take Your Free Senior Portrait!",
+    "description": "It\u2019s time to take your portrait for the Yearbook! Seniors who do so will be featured in the 2025 yearbook and can purchase their book for just $29.",
+    "image": "https://events.brown.edu/live/image/gid/175/width/200/height/200/crop/1/src_region/0,0,1300,866/12124_EXC_EMBA-Elise-Perrault-Business-and-Society_Photo_20190617_17.rev.1686164961.jpg",
+    "date": "December16, 2024",
+    "time": "9:00am - 4:30pm",
+    "attendees": 0,
+    "location": {
+      "name": "Robinson Hall Virtual",
+      "latitude": "41.827192",
+      "longitude": "-71.404386",
+      "url": "https://events.brown.edu/event//event/302718-seniors-take-your-free-senior-portrait"
+    },
+    "category": null,
+    "paid": false
+  },
+  {
+    "source": "BROWN",
+    "id": 5,
+    "title": "Sustainable Energy Special Seminar: Steve Greenbaum, Hunter College of CUNY",
+    "description": "Steve Greenbaum, Hunter College of CUNY, will present a talk, \u201cRecent NMR Investigations of Ion Transport in Novel Electrolytes.",
+    "image": "https://events.brown.edu/live/image/gid/44/width/200/height/200/crop/1/src_region/0,13,202,215/17588_Greenbaum_Headshot.PNG",
+    "date": "December17, 2024",
+    "time": "10:00am - 11:00am",
+    "attendees": 0,
+    "location": {
+      "name": "Barus and Holley Virtual",
+      "latitude": "41.826581",
+      "longitude": "-71.397932",
+      "url": "https://events.brown.edu/event//event/302358-sustainable-energy-special-seminar-steve-gr"
+    },
+    "category": null,
+    "paid": false
+  }
+]
