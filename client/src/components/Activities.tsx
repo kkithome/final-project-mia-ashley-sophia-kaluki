@@ -6,7 +6,8 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import { activities as fileActivities, Activity } from "../activityData";
-import firebaseConfig2 from '../resources/firebase2.js';
+import firebaseConfig2 from '../../resources/firebase2.js'; 
+import { useParams, useNavigate } from "react-router-dom";
 
 interface ActivitiesProps {
   activities: Activity[];
@@ -73,6 +74,7 @@ const convertTo24Hour = (time: string) => {
 
 export default function Activities({ activities }: ActivitiesProps) {
   const [activities2, setActivities] = useState<Activity[]>([]); 
+  const navigate = useNavigate();
 
   useEffect(() => {
     setActivities(activities);
@@ -145,8 +147,6 @@ export default function Activities({ activities }: ActivitiesProps) {
     initializeActivities();
   }, []);
 
-  
-
   return (
     <div className="flex flex-row items-center justify-center flex-wrap gap-8 space-x-5 md:space-x-8">
       {activities2.map((activity) => (
@@ -159,7 +159,10 @@ export default function Activities({ activities }: ActivitiesProps) {
             alt={activity.title}
             className="w-full h-40 object-cover rounded-lg"
           />
-          <h2 className="paytone-one text-customRed text-left">
+          <h2
+            className="paytone-one text-customRed text-left cursor-pointer"
+            onClick={() => navigate(`/activity/${activity.id}`)}
+          >
             {activity.title}
           </h2>
           <p className="kadwa text-xs text-left">{activity.description}</p>
@@ -172,30 +175,28 @@ export default function Activities({ activities }: ActivitiesProps) {
                 <strong>Time:</strong> {activity.startTime}
               </p>
             </div>
-            <p>
-              <strong>Location:</strong> {activity.location}
-            </p>
+            <p className="kadwa text-xs">{activity.attendees} Attending</p>
+            <button
+              className="kadwa rounded-full px-4 py-3 mt-2 mb-2 text-sm border border-black bg-gray-100 hover:bg-brown-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-black"
+              onClick={() => createICSFile(activity)}
+            >
+              Add to Calendar
+            </button>
+            <div style={{ margin: "1rem 0" }}>
+              <label>
+                <input type="checkbox" /> Going
+              </label>
+            </div>
+            <button
+              className="kadwa rounded-full px-4 py-3 mt-2 mb-2 text-sm border border-black bg-gray-100 hover:bg-brown-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-black"
+              onClick={() => alert(`Added ${activity.title} to your calendar!`)}
+            >
+              Add to Favorites
+            </button>
           </div>
-          <p className="kadwa text-xs">{activity.attendees} Attending</p>
-          <button
-            className="kadwa rounded-full px-4 py-3 mt-2 mb-2 text-sm border border-black bg-gray-100 hover:bg-brown-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-black"
-            onClick={() => createICSFile(activity)}
-          >
-            Add to Calendar
-          </button>
-          <div style={{ margin: "1rem 0" }}>
-            <label>
-              <input type="checkbox" /> Going
-            </label>
-          </div>
-          <button
-            className="kadwa rounded-full px-4 py-3 mt-2 mb-2 text-sm border border-black bg-gray-100 hover:bg-brown-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-black"
-            onClick={() => alert(`Added ${activity.title} to your calendar!`)}
-          >
-            Add to Favorites
-          </button>
         </div>
       ))}
     </div>
   );
+
 }

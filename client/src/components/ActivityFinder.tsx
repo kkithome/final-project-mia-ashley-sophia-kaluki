@@ -104,7 +104,7 @@ export default function ActivitiesFinder() {
   
   return (
     <div className="space-y-10">
-      <div className="flex flex-row">
+      <div className="flex flex-row justify-center">
         <input
           // value={searchInput || ""}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -114,15 +114,15 @@ export default function ActivitiesFinder() {
           placeholder="Search Keyword"
         ></input>
         <div>
-        <input
-          type="checkbox"
-          id="onCampusCheckbox"
-          onChange={(e) => setIsOnCampusState(e.target.checked ? true : null)}
-        />
-        <label htmlFor="onCampusCheckbox" className="ml-2">
-          On Campus
-        </label>
-      </div>
+          <input
+            type="checkbox"
+            id="onCampusCheckbox"
+            onChange={(e) => setIsOnCampusState(e.target.checked ? true : null)}
+          />
+          <label htmlFor="onCampusCheckbox" className="ml-2">
+            On Campus
+          </label>
+        </div>
         <input
           type="date"
           onChange={(e) => setStartDateState(e.target.value || null)}
@@ -141,12 +141,12 @@ export default function ActivitiesFinder() {
             console.log("Keyword:", searchInput);
 
             const filters = {
-              isOnCampus: isOnCampusState || null, 
-              startDate: startDateState || null,   
-              endDate: endDateState || null,      
+              isOnCampus: isOnCampusState || null,
+              startDate: startDateState || null,
+              endDate: endDateState || null,
               category: categoryState || null,
             };
-            
+
             searchActivities(searchInput || "", filters);
           }}
         >
@@ -154,14 +154,14 @@ export default function ActivitiesFinder() {
         </button>
       </div>
       <div className="flex w-full justify-end p-4">
-      <div>
-        <button
-          className="paytone-one bg-customRed text-white rounded-lg flex items-center justify-center text-md px-2 py-1 md:px-4 md:py-2 md:text-xl"
-          onClick={() => navigate("/user-profile")}
-        >
-          User Profile
-        </button>
-      </div>
+        <div>
+          <button
+            className="paytone-one bg-customRed text-white rounded-lg flex items-center justify-center text-md px-2 py-1 md:px-4 md:py-2 md:text-xl"
+            onClick={() => navigate("/user-profile")}
+          >
+            User Profile
+          </button>
+        </div>
       </div>
       <div className="flex flex-row items-end justify-center">
         <img
@@ -177,7 +177,7 @@ export default function ActivitiesFinder() {
         </p>
       </div>
       <div className="flex flex-col space-x-10">
-        <Activities activities={searchResults}/>
+        <Activities activities={searchResults} />
       </div>
       <div className="flex flex-col items-center justify-center">
         <h3

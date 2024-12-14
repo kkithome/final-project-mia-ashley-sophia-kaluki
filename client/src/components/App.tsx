@@ -5,6 +5,7 @@ import "../styles/App.css";
 import "../styles/index.css";
 import "../output.css";
 import ActivityFinder from "./ActivityFinder";
+import ActivityPage from "./ActivityPage";
 import Home from "./Home";
 import Footer from "./Footer";
 import ThreeBearsImage from "../assets/Top3Bears.png";
@@ -21,6 +22,27 @@ import {
 import UserP from "./UserP";
 
 // use useUser to get username?
+
+const firebaseConfig = {
+  apiKey: process.env.API_KEY,
+  authDomain: process.env.AUTH_DOMAIN,
+  projectId: process.env.PROJECT_ID,
+  storageBucket: process.env.STORAGE_BUCKET,
+  messagingSenderId: process.env.MESSAGING_SENDER_ID,
+  appId: process.env.APP_ID,
+};
+
+// Initialize Firebase with the provided configuration
+let app;
+if (getApps().length === 0) {
+  app = initializeApp(firebaseConfig); 
+} else {
+  app = getApp(); 
+}
+
+const db = getFirestore(app);
+
+export { db };
 
 function App() {
   return (
@@ -66,6 +88,7 @@ function App() {
                   <Route path="/" element={<Home />} />
                   <Route path="/activity-finder" element={<ActivityFinder />} />
                   <Route path="/user-profile" element={<UserP />} />
+                  <Route path="/activity/:id" element={<ActivityPage />} />
                 </Routes>
               </div>
               <Footer />

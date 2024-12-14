@@ -4,7 +4,7 @@ import '../styles/App.css';
 import '../styles/index.css';
 import '../output.css';
 import Bear4 from '../assets/Bear4.png';
-import DropDown from '../assets/FilterDropDown.png';
+import DropDown from '../assets/FilterDropDown.png'; 
 import Pin from '../assets/BrownPin.png'; 
 import Calendar from '../assets/CalendarIcon.png'; 
 import { useNavigate } from "react-router-dom";
