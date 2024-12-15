@@ -16,7 +16,7 @@ import spark.Spark;
 public class Server {
 
   public static void setUpServer() {
-    int port = 3232;
+    int port = 3235;
     Spark.port(port);
 
     after(
@@ -30,7 +30,7 @@ public class Server {
     try {
 
       firebaseUtils = new FirebaseUtilities();
-      Spark.get("/scrape", new ScraperHandler());
+      Spark.get("/scrape", new ScraperHandler(firebaseUtils));
       Spark.get("/fetch-pins", new FetchPinsHandler(firebaseUtils));
       Spark.get("/save-pins", new SavePinsHandler(firebaseUtils));
       Spark.get("/clear-all", new ClearAllPinsHandler(firebaseUtils));

@@ -13,10 +13,10 @@ import spark.Route;
 
 public class SavePinsHandler implements Route {
 
-  public StorageInterface storageHandler;
+  public StorageInterface pinsStorageHandler;
 
-  public SavePinsHandler(StorageInterface storageHandler) {
-    this.storageHandler = storageHandler;
+  public SavePinsHandler(StorageInterface pinsStorageHandler) {
+    this.pinsStorageHandler = pinsStorageHandler;
   }
 
   @Override
@@ -40,12 +40,12 @@ public class SavePinsHandler implements Route {
       pinData.put("coordinates", Map.of("lat", lat, "long", lon));
       pinData.put("pinID", pinID);
 
-      this.storageHandler.addDocument(uid, "pins", pinID, pinData);
+      this.pinsStorageHandler.addDocument(uid, "pins", pinID, pinData);
 
       String allPinsDocID = UUID.randomUUID().toString();
-      this.storageHandler.addDocument("all_users", "pins", allPinsDocID, pinData);
+      this.pinsStorageHandler.addDocument("all_users", "pins", allPinsDocID, pinData);
 
-      List<Map<String, Object>> allPins = this.storageHandler.getCollection("all_users", "pins");
+      List<Map<String, Object>> allPins = this.pinsStorageHandler.getCollection("all_users", "pins");
 
       if (allPins == null) {
         allPins = new ArrayList<>();
