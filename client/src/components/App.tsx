@@ -9,6 +9,7 @@ import ActivityPage from "./ActivityPage";
 import Home from "./Home";
 import Footer from "./Footer";
 import ThreeBearsImage from "../assets/Top3Bears.png";
+import Bear4 from "../assets/Bear4.png";
 import {
   SignedIn,
   SignedOut,
@@ -20,6 +21,7 @@ import {
   useUser,
 } from "@clerk/clerk-react";
 import UserP from "./UserP";
+import Searcher from "./Searcher";
 
 // use useUser to get username?
 
@@ -35,9 +37,9 @@ const firebaseConfig = {
 // Initialize Firebase with the provided configuration
 let app;
 if (getApps().length === 0) {
-  app = initializeApp(firebaseConfig); 
+  app = initializeApp(firebaseConfig);
 } else {
-  app = getApp(); 
+  app = getApp();
 }
 
 const db = getFirestore(app);
@@ -49,51 +51,75 @@ function App() {
     <Router>
       <div className="bg-customBrown min-h-screen flex flex-col">
         <main className="flex-grow">
-          <SignedOut>
-            <div className="flex flex-col min-h-screen">
-              <div className="flex-grow flex flex-col items-center justify-center space-y-4 md:space-y-10">
+          <div className="space-y-32 relative">
+            <div className="flex flex-row justify-stretch">
+              <SignedIn>
+                <div className = "basis-1/4">
+                </div>
+                <div className="basis-1/2 flex flex-row items-center justify-center">
                 <img
-                  src={ThreeBearsImage}
-                  alt="3 bears in a row"
-                  className="w-60 md:w-96 h-auto overflow-hidden relative"
+                  src={Bear4}
+                  alt="A bear"
+                  className="w-12 md:w-32 h-auto overflow-hidden relative"
                 />
-                <p
-                  className="limelight text-3xl md:text-7xl text-white"
-                  aria-label="Page Title"
-                >
-                  Bear Tracks
-                </p>
-                <div className="flex flex-row space-x-3 md:space-x-7">
-                  <div className="paytone-one bg-customRed text-white rounded-lg text-md px-3 py-1 md:px-7 md:py-2 md:text-xl">
-                    <SignUpButton>SIGN UP</SignUpButton>
+                  <p
+                    className="limelight text-1xl md:text-6xl text-white"
+                    aria-label="Page Title"
+                  >
+                    Bear Tracks
+                  </p>
+                </div>
+                <div className="flex justify-end p-4 basis-1/4">
+                  <div className="mx-4 my-auto">
+                    <UserButton />
                   </div>
-                  <div className="paytone-one bg-customRed text-white rounded-lg text-md px-3 py-1 md:px-7 md:py-2 md:text-xl">
-                    <SignInButton>LOG IN</SignInButton>
+                  <div className="paytone-one bg-customRed text-white rounded-lg flex items-center justify-center text-md px-2 py-1 md:px-4 md:py-2 md:text-xl">
+                    <SignOutButton>LOG OUT</SignOutButton>
                   </div>
                 </div>
-              </div>
-              <Footer />
+              </SignedIn>
             </div>
-          </SignedOut>
-          <SignedIn>
-            <div className="flex flex-col min-h-screen">
-              <div className="flex w-full justify-end p-4">
-                <div className="paytone-one bg-customRed text-white rounded-lg flex items-center justify-center text-md px-2 py-1 md:px-4 md:py-2 md:text-xl">
-                  <SignOutButton>LOG OUT</SignOutButton>
-                </div>
-              </div>
+          </div>
+          <div className="flex flex-col min-h-screen">
+            <SignedIn>
               <div className="flex-grow">
                 {/* <ActivityFinder/> */}
                 <Routes>
-                  <Route path="/" element={<Home />} />
+                  <Route path="/" element={<ActivityFinder />} />
                   <Route path="/activity-finder" element={<ActivityFinder />} />
                   <Route path="/user-profile" element={<UserP />} />
                   <Route path="/activity/:id" element={<ActivityPage />} />
+                  <Route path="/searcher" element={<Searcher />} />
+                  <Route path="/home" element={<Home />} />
                 </Routes>
               </div>
-              <Footer />
-            </div>
-          </SignedIn>
+            </SignedIn>
+            <SignedOut>
+                  <div className="flex flex-col items-center justify-center flex-grow my-auto">
+                    <img
+                      src={ThreeBearsImage}
+                      alt="A bear"
+                      className="w-64 md:w-72 h-auto overflow-hidden relative"
+                    />
+                    <p
+                      className="limelight text-3xl md:text-7xl text-center text-white"
+                      aria-label="Page Title"
+                    >
+                      Bear Tracks
+                    </p>
+                  <div className="flex justify-center flex-row space-x-3 md:space-x-7">
+                    <div className="paytone-one bg-customRed text-white rounded-lg text-md px-3 py-1 md:px-7 md:py-2 md:text-xl">
+                      <SignUpButton>SIGN UP</SignUpButton>
+                    </div>
+                    <div className="paytone-one bg-customRed text-white rounded-lg text-md px-3 py-1 md:px-7 md:py-2 md:text-xl">
+                      <SignInButton>LOG IN</SignInButton>
+                    </div>
+                  </div>
+                  </div>
+          
+            </SignedOut>
+            <Footer />
+          </div>
         </main>
       </div>
     </Router>

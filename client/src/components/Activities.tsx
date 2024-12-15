@@ -166,7 +166,7 @@ export default function Activities({ activities }: ActivitiesProps) {
             {activity.title}
           </h2>
           <p className="kadwa text-xs text-left">{activity.description}</p>
-          <div className="kadwa flex flex-row text-s text-left space-x-3">
+          <div className="kadwa flex justify-between flex-row text-s text-left space-x-3">
             <div className="flex flex-col">
               <p>
                 <strong>Date:</strong> {activity.date}
@@ -175,14 +175,16 @@ export default function Activities({ activities }: ActivitiesProps) {
                 <strong>Time:</strong> {activity.startTime}
               </p>
             </div>
-            <p className="kadwa text-xs">{activity.attendees} Attending</p>
+            <p className="kadwa text-xs">{activity.attendees.length} Attending</p>
+            </div>
+            <div className = "flex flex-row gap-4">
             <button
               className="kadwa rounded-full px-4 py-3 mt-2 mb-2 text-sm border border-black bg-gray-100 hover:bg-brown-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-black"
               onClick={() => createICSFile(activity)}
             >
               Add to Calendar
             </button>
-            <div style={{ margin: "1rem 0" }}>
+            <div className = "kadwa rounded-full px-4 py-3 mt-2 mb-2 text-sm border border-black bg-gray-100 hover:bg-brown-700 focus:outline-none focus:ring-2 focus:ring-black">
               <label>
                 <input type="checkbox" /> Going
               </label>

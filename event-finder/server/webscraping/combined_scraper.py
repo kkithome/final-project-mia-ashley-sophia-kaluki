@@ -140,8 +140,8 @@ def scrape_events(source: Source):
 
     
     if source == Source.BROWN:
-        url = "https://events.brown.edu/all"
-        wait_class_name = "lw_cal_event_list"
+      url = "https://events.brown.edu/all"
+      wait_class_name = "lw_cal_event_list"
 
     soup = driver_helper(url, wait_class_name, source)
 
@@ -363,9 +363,6 @@ def save_events_json(events, filename='events.json'):
         json.dump([e.to_json() for e in events], f, indent=2)
 
 
-scrape_events(Source.BROWN)
-
-
 def main():
 
     if len(sys.argv) < 2:
@@ -375,7 +372,7 @@ def main():
     source = sys.argv[1]
 
     try:
-        brown_events = scrape_events(Source.BROWN)
+      #  brown_events = scrape_events(Source.BROWN)
         
         eventbrite_events = scrape_eventbrite_events()
 
@@ -386,10 +383,11 @@ def main():
             
 
         elif source.lower() == "eventbrite":
-            return eventbrite_events
+            json_ready = json.dumps([event.to_json() for event in eventbrite_events]).encode('utf-8').decode('unicode_escape')
+            print(json_ready)
 
         elif source.lower() == "both": 
-            return brown_events + eventbrite_events
+            print(brown_events + eventbrite_events)
 
     except Exception as e:
         print(json.dumps({"result": "error","error": str(e)}))

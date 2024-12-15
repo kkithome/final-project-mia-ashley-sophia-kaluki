@@ -118,7 +118,7 @@ export default function ActivityPage() {
                 <strong>Location:</strong> {activity.location}
               </p>
               <p>
-                <strong>Attendees:</strong> {activity.attendees}
+                <strong>Attendees:</strong> {activity.attendees.length}
               </p>
             </div>
             <div className="flex flex-row space-x-4 mt-6">

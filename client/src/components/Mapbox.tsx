@@ -187,7 +187,7 @@ export default function Mapbox() {
   }, [query, handleSearch]);
 
   return (
-    <div className="w-full mt-10">
+    <div className="w-full">
       {/* <div className="flex flex-row items-center justify-center mb-8">
         <input
           type="text"
