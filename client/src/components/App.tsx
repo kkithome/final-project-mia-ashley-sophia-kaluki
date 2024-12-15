@@ -47,6 +47,7 @@ const db = getFirestore(app);
 export { db };
 
 function App() {
+  
   return (
     <Router>
       <div className="bg-customBrown min-h-screen flex flex-col">
@@ -75,6 +76,7 @@ function App() {
                   </div>
                   <div className="paytone-one bg-customRed text-white rounded-lg flex items-center justify-center text-md px-2 py-1 md:px-4 md:py-2 md:text-xl">
                     <SignOutButton>LOG OUT</SignOutButton>
+                    
                   </div>
                 </div>
               </SignedIn>
