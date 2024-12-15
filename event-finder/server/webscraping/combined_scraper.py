@@ -42,7 +42,7 @@ class Location:
             "url": self.url }
 
 class Event:
-    def __init__(self, source: Source, id: str, title: str, description: str, image: str, 
+    def __init__(self, source: Source, id: int, title: str, description: str, image: str, 
                  date: str, start_time: str, end_time: str, attendance: int, attendees: list[str], location: Location, 
                  category: str = None, onCampus: bool = False):
         self.source = source
@@ -156,7 +156,7 @@ def scrape_events(source: Source):
     for item in event_containers:
         # remember to change back to event items
         source = Source.BROWN
-        id = str((len(events) + 1)) + " - " +  datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        id = len(events) + 1
         title = get_event_title(item, source) # done for Brown
         description_and_date = get_event_description_and_date(item, source)
         description = description_and_date.description
@@ -223,7 +223,7 @@ def scrape_eventbrite_events():
             # Create Event object
             event = Event(
                 source=Source.EVENTBRITE,
-                id=str((len(events) + 1)) + " - " +  datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                id=len(events) + 1
                 title=title,
                 description="",  # We could fetch this from the event page if needed
                 image=img_url,

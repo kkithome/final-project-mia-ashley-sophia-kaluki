@@ -8,7 +8,7 @@ public class Event {
   @Json(name = "source")
   private String source;
   @Json(name = "id")
-  private String id;
+  private int id;
 
   @Json(name = "title")
   private String title;
@@ -72,7 +72,7 @@ public class Event {
   }
   public String getSource() { return this.source;}
 
-  public String getId() {
+  public int getId() {
     return this.id;
   }
 
@@ -120,7 +120,7 @@ public class Event {
     return this.onCampus;
   }
 
-  public void setId(String id) {
+  public void setId(int id) {
     this.id = id;
   }
 
