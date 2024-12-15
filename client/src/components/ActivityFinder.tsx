@@ -105,35 +105,40 @@ export default function ActivitiesFinder() {
   return (
     <div className="space-y-10">
       <div className="flex flex-row item-center justify-center w-full mt-3">
-      <a
-        href="/searcher"
-        className="paytone-one bg-customRed text-white rounded-lg text-3xl px-7 py-1 md:px-6 md:py-2 md:text-5xl mt-8 ml-12"
-      >
-        Search
-      </a>
+        <a
+          href="/searcher"
+          className="paytone-one bg-customRed text-white rounded-lg text-3xl px-7 py-1 md:px-6 md:py-2 md:text-5xl mt-8 ml-12"
+        >
+          Search
+        </a>
+        <button
+          className="paytone-one bg-customRed text-white rounded-lg text-3xl px-7 py-1 md:px-6 md:py-2 md:text-5xl mt-8 ml-12 mr-4"
+          onClick={() => navigate("/user-profile")}
+        >
+          User Profile
+        </button>
       </div>
       <div className="flex flex-col space-x-10">
         <Activities activities={searchResults} />
       </div>
       <div className="flex flex-col items-center justify-center">
         <div className="flex flex-row items-end justify-between">
-        <div className = "basis-1/4">
-                </div>
-        <div className="basis-1/2"> 
-        <h3
-          className="limelight text-3xl md:text-7xl text-white"
-          aria-label="Page Title"
-        >
-          Map
-        </h3>
-        </div>
-        <div className="basis-1/4 flex flex-row justify-items-end">
-        <img
-          src={Bear2}
-          alt="A bear"
-          className="w-32 md:w-32 h-auto overflow-hidden relative"
-           />
-        </div>
+          <div className="basis-1/4"></div>
+          <div className="basis-1/2">
+            <h3
+              className="limelight text-3xl md:text-7xl text-white"
+              aria-label="Page Title"
+            >
+              Map
+            </h3>
+          </div>
+          <div className="basis-1/4 flex flex-row justify-items-end">
+            <img
+              src={Bear2}
+              alt="A bear"
+              className="w-32 md:w-32 h-auto overflow-hidden relative"
+            />
+          </div>
         </div>
         <Mapbox />
       </div>
