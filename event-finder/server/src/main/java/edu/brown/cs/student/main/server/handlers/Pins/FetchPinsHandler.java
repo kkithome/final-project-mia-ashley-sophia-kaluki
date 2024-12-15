@@ -53,7 +53,6 @@ public class FetchPinsHandler implements Route {
 
     } catch (Exception e) {
       e.printStackTrace();
-      ;
       responseMap.put("response_type", "failure");
       responseMap.put("error", e.getMessage());
     }
