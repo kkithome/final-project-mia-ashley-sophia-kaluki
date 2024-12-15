@@ -12,10 +12,10 @@ import spark.Route;
 
 public class FetchPinsHandler implements Route {
 
-  public StorageInterface storageHandler;
+  public StorageInterface pinsStorageHandler;
 
-  public FetchPinsHandler(StorageInterface storageHandler) {
-    this.storageHandler = storageHandler;
+  public FetchPinsHandler(StorageInterface pinsStorageHandler) {
+    this.pinsStorageHandler = pinsStorageHandler;
   }
 
   /*
@@ -31,7 +31,7 @@ public class FetchPinsHandler implements Route {
     Map<String, Object> responseMap = new HashMap<>();
     try {
       System.out.println("Listing all pins");
-      List<Map<String, Object>> vals = this.storageHandler.getCollection("all_users", "pins");
+      List<Map<String, Object>> vals = this.pinsStorageHandler.getCollection("all_users", "pins");
 
       if (vals == null) {
         responseMap.put("respose_type", "failure");

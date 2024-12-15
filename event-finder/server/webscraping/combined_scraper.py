@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 from requests import get
 from collections import Counter
 import requests
+from datetime import datetime
 import time
 from enum import Enum
 import json
@@ -41,7 +42,7 @@ class Location:
             "url": self.url }
 
 class Event:
-    def __init__(self, source: Source, id: int, title: str, description: str, image: str, 
+    def __init__(self, source: Source, id: str, title: str, description: str, image: str, 
                  date: str, start_time: str, end_time: str, attendance: int, attendees: list[str], location: Location, 
                  category: str = None, onCampus: bool = False):
         self.source = source
@@ -99,11 +100,13 @@ class Time:
 
 brown_url = "https://events.brown.edu/event/"
 
+
 def get_driver():
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument("--headless")
     service = ChromeService(ChromeDriverManager().install())
     return webdriver.Chrome(service=service, options=chrome_options)
+
 
 
 def driver_helper(url, wait_class_name, source:Source):
@@ -152,21 +155,28 @@ def scrape_events(source: Source):
     #event_items = soup.find_all("div", class_= "lw_cal_event")
     for item in event_containers:
         # remember to change back to event items
-        source = source
-        id = len(events) + 1 # applicable for any scraping
+        source = Source.BROWN
+        id = str((len(events) + 1)) + " - " +  datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         title = get_event_title(item, source) # done for Brown
-        description = get_event_description_and_date(item, source).description
+        description_and_date = get_event_description_and_date(item, source)
+        description = description_and_date.description
         image = get_image(item, source)
-        date = get_event_description_and_date(item, source).date
-        start_time = get_event_time(item, source).start
-        end_time =  get_event_time(item, source).end
+        date = description_and_date.date
+        event_time = get_event_time(item, source)
+        if event_time is not None: 
+            start_time = event_time.start
+            end_time =  event_time.end
+        else:
+            start_time = "No time data available"
+            end_time =  "No time data available"
         attendance = 0
         attendees = []
         location = get_location(item, source)
+        category = "Brown event"
         onCampus = True
         event = Event(source, id, title, description, image, date, start_time, 
                       end_time, attendance,
-                      attendees, location, onCampus)
+                      attendees, location, category, onCampus)
         
         events.append(event)
 
@@ -213,7 +223,7 @@ def scrape_eventbrite_events():
             # Create Event object
             event = Event(
                 source=Source.EVENTBRITE,
-                id=len(events) + 1,
+                id=str((len(events) + 1)) + " - " +  datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 title=title,
                 description="",  # We could fetch this from the event page if needed
                 image=img_url,
@@ -259,7 +269,6 @@ def get_event_description_and_date(event, source: Source) -> Description_and_Dat
         try: 
          driver.get(full_url)
         except WebDriverException as e:
-            print(f"Failed to navigate to {full_url}: {e}")
             return Description_and_Date("No description available", "No date available")
 
 
@@ -304,6 +313,8 @@ def get_event_time(event, source: Source) -> str:
             start_time = time_tag.get_text(strip=True)
             end_time = end_time_tag.get_text(strip=True)
             return Time(start_time, end_time)
+        else:
+            return None
     elif source == Source.EVENTBRITE:
         # Time is typically included in the date string for Eventbrite
         return None
@@ -386,10 +397,18 @@ def main():
             
 
         elif source.lower() == "eventbrite":
-            return eventbrite_events
+            json_ready = json.dumps([event.to_json() for event in eventbrite_events])
+            print(json_ready)
+            return json_ready
 
-        elif source.lower() == "both": 
-            return brown_events + eventbrite_events
+        elif source.lower() == "both":
+            all_events = json.dumps([event.to_json() for event in brown_events]
+            ).encode('utf-8').decode('unicode_escape') + json.dumps([event.to_json() for event in eventbrite_events])
+            print(all_events)
+            return json_ready
+
+        else:
+            return "Invalid source input"
 
     except Exception as e:
         print(json.dumps({"result": "error","error": str(e)}))

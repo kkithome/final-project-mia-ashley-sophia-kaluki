@@ -16,10 +16,10 @@ import spark.Route;
 
 public class ClearAllPinsHandler implements Route {
 
-  public StorageInterface storageHandler;
+  public StorageInterface pinsStorageHandler;
 
-  public ClearAllPinsHandler(StorageInterface storageHandler) {
-    this.storageHandler = storageHandler;
+  public ClearAllPinsHandler(StorageInterface pinsStorageHandler) {
+    this.pinsStorageHandler = pinsStorageHandler;
   }
 
   @Override

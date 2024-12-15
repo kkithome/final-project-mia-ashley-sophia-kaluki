@@ -5,8 +5,10 @@ import java.util.List;
 
 public class Event {
 
+  @Json(name = "source")
+  private String source;
   @Json(name = "id")
-  private int id;
+  private String id;
 
   @Json(name = "title")
   private String title;
@@ -42,7 +44,8 @@ public class Event {
   private boolean onCampus;
 
   public Event(
-      int id,
+      String source,
+      String id,
       String title,
       String description,
       String image,
@@ -54,6 +57,7 @@ public class Event {
       Location location,
       String category,
       boolean onCampus) {
+    this.source = source;
     this.id = id;
     this.title = title;
     this.description = description;
@@ -66,8 +70,9 @@ public class Event {
     this.category = category;
     this.onCampus = onCampus;
   }
+  public String getSource() { return this.source;}
 
-  public int getId() {
+  public String getId() {
     return this.id;
   }
 
@@ -115,7 +120,7 @@ public class Event {
     return this.onCampus;
   }
 
-  public void setId(int id) {
+  public void setId(String id) {
     this.id = id;
   }
 
