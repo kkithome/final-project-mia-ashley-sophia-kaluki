@@ -143,8 +143,8 @@ def scrape_events(source: Source):
 
     
     if source == Source.BROWN:
-        url = "https://events.brown.edu/all"
-        wait_class_name = "lw_cal_event_list"
+      url = "https://events.brown.edu/all"
+      wait_class_name = "lw_cal_event_list"
 
     soup = driver_helper(url, wait_class_name, source)
 
@@ -278,7 +278,6 @@ def get_event_description_and_date(event, source: Source) -> Description_and_Dat
             EC.presence_of_element_located((By.CLASS_NAME, "lw_calendar_event_description"))
         )
         except TimeoutException:
-            print(f"Timeout Description not found for event at {full_url}")
             return Description_and_Date("No description available", "No date available")
 
 
@@ -374,9 +373,6 @@ def save_events_json(events, filename='events.json'):
         json.dump([e.to_json() for e in events], f, indent=2)
 
 
-scrape_events(Source.BROWN)
-
-
 def main():
 
     if len(sys.argv) < 2:
@@ -386,9 +382,10 @@ def main():
     source = sys.argv[1]
 
     try:
-        brown_events = scrape_events(Source.BROWN)
-        
-        eventbrite_events = scrape_eventbrite_events()
+      
+      brown_events = scrape_events(Source.BROWN)
+       
+      eventbrite_events = scrape_eventbrite_events()
 
         if source.lower() == "brown":
             json_ready = json.dumps([event.to_json() for event in brown_events]).encode('utf-8').decode('unicode_escape')
