@@ -2,6 +2,7 @@ package edu.brown.cs.student.main.server;
 
 import static spark.Spark.after;
 
+import edu.brown.cs.student.main.server.handlers.Events.FetchEventsHandler;
 import edu.brown.cs.student.main.server.handlers.Events.ScraperHandler;
 import edu.brown.cs.student.main.server.handlers.Pins.ClearAllPinsHandler;
 import edu.brown.cs.student.main.server.handlers.Pins.FetchPinsHandler;
@@ -31,9 +32,13 @@ public class Server {
 
       firebaseUtils = new FirebaseUtilities();
       Spark.get("/scrape", new ScraperHandler(firebaseUtils));
+      Spark.get("/fetch-events", new FetchEventsHandler(firebaseUtils));
+
       Spark.get("/fetch-pins", new FetchPinsHandler(firebaseUtils));
       Spark.get("/save-pins", new SavePinsHandler(firebaseUtils));
       Spark.get("/clear-all", new ClearAllPinsHandler(firebaseUtils));
+
+
       Spark.get("/clear-user", new ClearUserHandler(firebaseUtils));
       Spark.notFound(
           (request, response) -> {
