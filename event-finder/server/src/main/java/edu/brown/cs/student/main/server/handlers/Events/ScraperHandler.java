@@ -60,8 +60,9 @@ public class ScraperHandler implements Route {
     }
     for (Event event: events) {
       String eventSource = event.getSource();
-      String eventIntID = event.getSource();
-      String eventID = eventSource + " - " + eventIntID;
+      String eventTitle = event.getTitle();
+      String eventDate = event.getDate();
+      String eventID = eventSource + " - " + eventTitle + " " + eventDate ;
 
     boolean eventInFirestore =  this.eventStorageHandler.docExists("general",
           "activities", eventID);
