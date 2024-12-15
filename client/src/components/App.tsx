@@ -36,10 +36,11 @@ const firebaseConfig = {
 
 // Initialize Firebase with the provided configuration
 let app;
-if (getApps().length === 0) {
+if (!app) {
   app = initializeApp(firebaseConfig);
 } else {
   app = getApp();
+  console.log("App already created");
 }
 
 const db = getFirestore(app);

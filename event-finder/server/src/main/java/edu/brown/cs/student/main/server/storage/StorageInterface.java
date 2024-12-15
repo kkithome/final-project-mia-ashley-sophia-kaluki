@@ -12,11 +12,11 @@ public interface StorageInterface {
   List<Map<String, Object>> getCollection(String uid, String collection_id)
       throws InterruptedException, ExecutionException;
 
-  public DocumentReference getDocumentReference(String uid, String collection_id, String doc_id) throws
-      ExecutionException, InterruptedException;
+  public DocumentReference getDocumentReference(String uid, String collection_id, String doc_id)
+      throws ExecutionException, InterruptedException;
 
-  public boolean docExists(String uid, String collection_id, String doc_id) throws ExecutionException,
-      InterruptedException;
+  public boolean docExists(String uid, String collection_id, String doc_id)
+      throws ExecutionException, InterruptedException;
 
   void clearUser(String uid) throws InterruptedException, ExecutionException;
 }

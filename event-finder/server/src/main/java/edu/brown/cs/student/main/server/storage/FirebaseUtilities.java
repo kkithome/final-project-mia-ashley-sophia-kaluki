@@ -58,22 +58,20 @@ public class FirebaseUtilities implements StorageInterface {
     return data;
   }
 
-  public DocumentReference getDocumentReference(String uid, String collection_id, String doc_id) throws
-      ExecutionException, InterruptedException {
+  public DocumentReference getDocumentReference(String uid, String collection_id, String doc_id)
+      throws ExecutionException, InterruptedException {
     Firestore db = FirestoreClient.getFirestore();
     return db.collection(collection_id).document(doc_id);
   }
 
-  public boolean docExists(String uid, String collection_id, String doc_id) throws ExecutionException,
-      InterruptedException {
+  public boolean docExists(String uid, String collection_id, String doc_id)
+      throws ExecutionException, InterruptedException {
     DocumentReference docRef = getDocumentReference(uid, collection_id, doc_id);
     return docRef.get().get().exists();
-
   }
 
   @Override
-  public void addDocument(
-      String uid, String collection_id, String doc_id, Map<String, Object> data)
+  public void addDocument(String uid, String collection_id, String doc_id, Map<String, Object> data)
       throws IllegalArgumentException {
     if (uid == null || collection_id == null || doc_id == null || data == null) {
       throw new IllegalArgumentException(

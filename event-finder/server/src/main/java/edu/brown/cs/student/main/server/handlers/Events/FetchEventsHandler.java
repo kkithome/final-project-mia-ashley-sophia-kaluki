@@ -1,7 +1,6 @@
 package edu.brown.cs.student.main.server.handlers.Events;
 
 import edu.brown.cs.student.main.server.Objects.Utils;
-import edu.brown.cs.student.main.server.handlers.Pins.FetchPinsHandler;
 import edu.brown.cs.student.main.server.storage.StorageInterface;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,10 +19,11 @@ public class FetchEventsHandler implements Route {
 
   @Override
   public Object handle(Request request, Response response) throws Exception {
-    Map<String,Object> responseMap = new HashMap<>();
+    Map<String, Object> responseMap = new HashMap<>();
     try {
       System.out.println("Listing all events");
-      List<Map<String, Object>> vals = this.eventStorageHandler.getCollection("general", "activities");
+      List<Map<String, Object>> vals =
+          this.eventStorageHandler.getCollection("general", "activities");
 
       if (vals == null) {
         responseMap.put("response_type", "failure");

@@ -45,7 +45,8 @@ public class SavePinsHandler implements Route {
       String allPinsDocID = UUID.randomUUID().toString();
       this.pinsStorageHandler.addDocument("all_users", "pins", allPinsDocID, pinData);
 
-      List<Map<String, Object>> allPins = this.pinsStorageHandler.getCollection("all_users", "pins");
+      List<Map<String, Object>> allPins =
+          this.pinsStorageHandler.getCollection("all_users", "pins");
 
       if (allPins == null) {
         allPins = new ArrayList<>();

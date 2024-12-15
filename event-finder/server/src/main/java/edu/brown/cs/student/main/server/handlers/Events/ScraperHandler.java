@@ -1,10 +1,8 @@
 package edu.brown.cs.student.main.server.handlers.Events;
 
-import com.google.cloud.firestore.DocumentReference;
 import edu.brown.cs.student.main.server.Objects.Event;
 import edu.brown.cs.student.main.server.Objects.Utils;
 import edu.brown.cs.student.main.server.storage.StorageInterface;
-import io.grpc.Context.Storage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,25 +50,25 @@ public class ScraperHandler implements Route {
   private void saveToFirestore(List<Event> events) throws ExecutionException, InterruptedException {
     Map<String, Object> eventData = new HashMap<>();
 
-    List<Map<String,Object>> allEvents = this.eventStorageHandler.getCollection("general",
-        "activities");
+    List<Map<String, Object>> allEvents =
+        this.eventStorageHandler.getCollection("general", "activities");
 
     if (allEvents == null) {
       allEvents = new ArrayList<>();
     }
-    for (Event event: events) {
+    for (Event event : events) {
       String eventSource = event.getSource();
       String eventTitle = event.getTitle();
       String eventDate = event.getDate();
-      String eventID = eventSource + " - " + eventTitle + " " + eventDate ;
+      String eventID = eventSource + " - " + eventTitle + " " + eventDate;
 
-    boolean eventInFirestore =  this.eventStorageHandler.docExists("general",
-          "activities", eventID);
+      boolean eventInFirestore =
+          this.eventStorageHandler.docExists("general", "activities", eventID);
 
-    if (eventInFirestore) {
-      System.out.println("Event already exists: " + eventID);
-      continue;
-    }
+      if (eventInFirestore) {
+        System.out.println("Event already exists: " + eventID);
+        continue;
+      }
 
       eventData.put("source", event.getSource());
       eventData.put("id", event.getId());
@@ -88,7 +86,6 @@ public class ScraperHandler implements Route {
 
       this.eventStorageHandler.addDocument("general", "activities", eventID, eventData);
       allEvents.add(eventData);
-
     }
   }
 }
