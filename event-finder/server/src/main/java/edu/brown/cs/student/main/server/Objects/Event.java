@@ -45,7 +45,7 @@ public class Event {
 
   public Event(
       String source,
-      String id,
+      int id,
       String title,
       String description,
       String image,
