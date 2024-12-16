@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { db } from "./Activities";
-import { doc, getDoc, getDocs, collection } from "firebase/firestore";
+import { doc, getDoc, getDocs, collection, query, where } from "firebase/firestore";
 
 interface ActivityEvent {
   id: string;
@@ -15,11 +15,7 @@ export default function UserP() {
   const [favoritedEvents, setFavoritedEvents] = useState<ActivityEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
-  const upcomingEvents = [
-    { id: 1, title: "Art Exhibit" },
-    { id: 2, title: "Tech Conference" },
-  ];
+  const [upcomingEvents, setUpcomingEvents] = useState<ActivityEvent[]>([]);
 
   useEffect(() => {
     const fetchFavorites = async () => {
@@ -64,10 +60,33 @@ export default function UserP() {
         setLoading(false);
       }
     };
-    
 
+    const fetchUpcomingEvents = async () => {
+      try {
+        const today = new Date().toISOString().split("T")[0]; 
+        const activitiesCollection = collection(db, "activities");
+        const upcomingQuery = query(activitiesCollection, where("date", ">=", today));
+        const querySnapshot = await getDocs(upcomingQuery);
+
+        const events: ActivityEvent[] = querySnapshot.docs.map((doc) => ({
+          id: doc.data().id,
+          title: doc.data().title,
+          date: doc.data().date,
+        }));
+
+        console.log("Upcoming events:", events);
+        setUpcomingEvents(events);
+      } catch (error) {
+        console.error("Error fetching upcoming events:", error);
+      }
+    };
+    
     fetchFavorites();
+    fetchUpcomingEvents();
+    
   }, [user?.id]);
+
+  
 
   const backToMain = () => {
     navigate("/"); 
