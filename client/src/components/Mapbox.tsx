@@ -83,6 +83,8 @@ export default function Mapbox() {
         const fetchedPins = existingActivitiesSnapshot.docs
           .map((doc) => {
             const location = doc.data().location; 
+            const event = doc.data()
+            console.log(event)
             // debugging print
             console.log("Processing location:", location);
             console.log("Processing lat:", location.latitude);
@@ -99,12 +101,20 @@ export default function Mapbox() {
 
         setPins(fetchedPins);
         console.log(fetchedPins)
+
       } catch (error) {
         console.error("Error fetching pins:", error);
       }
     };
     fetchPins();
   }, [USER_ID]);
+
+  // useEffect(() => {
+  //   const initializePins = async () => {
+  //     await fetchPins();
+  //   };
+  //   initializePins();
+  // }, []);
 
   return (
     <div className="w-full">

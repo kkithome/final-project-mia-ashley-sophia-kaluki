@@ -49,7 +49,6 @@ public class FetchEventsHandler implements Route {
         eventData.put("category", event.get("category"));
         eventData.put("onCampus", event.get("onCampus"));
 
-
         Map<String, Object> location = (Map<String, Object>) event.get("location");
         if (location != null) {
           Map<String, Object> locationData = new HashMap<>();

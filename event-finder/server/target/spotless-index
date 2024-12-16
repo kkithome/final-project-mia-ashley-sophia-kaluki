@@ -2,11 +2,11 @@ olzWUqtA18bg6ETRPSpKmo5AgtesJGJBhEogAT6RJy4=
 src/main/java/edu/brown/cs/student/main/server/Objects/CachingDatasource.java 2024-12-15T14:17:10.408011819Z
 src/main/java/edu/brown/cs/student/main/server/Objects/Event.java 2024-12-15T16:08:03.652772233Z
 src/main/java/edu/brown/cs/student/main/server/Objects/EventDatasource.java 2024-12-15T14:17:10.408113401Z
-src/main/java/edu/brown/cs/student/main/server/Objects/Location.java 2024-12-15T14:17:10.408161734Z
-src/main/java/edu/brown/cs/student/main/server/Objects/Utils.java 2024-12-15T14:17:10.408210525Z
+src/main/java/edu/brown/cs/student/main/server/Objects/Location.java 2024-12-16T16:23:09.493819555Z
+src/main/java/edu/brown/cs/student/main/server/Objects/Utils.java 2024-12-16T16:23:09.493898222Z
 src/main/java/edu/brown/cs/student/main/server/Server.java 2024-12-15T16:08:03.767221537Z
-src/main/java/edu/brown/cs/student/main/server/handlers/Events/FetchEventsHandler.java 2024-12-15T16:08:03.863639060Z
-src/main/java/edu/brown/cs/student/main/server/handlers/Events/ScraperHandler.java 2024-12-15T16:08:03.840625703Z
+src/main/java/edu/brown/cs/student/main/server/handlers/Events/FetchEventsHandler.java 2024-12-16T16:23:09.493994472Z
+src/main/java/edu/brown/cs/student/main/server/handlers/Events/ScraperHandler.java 2024-12-16T02:21:28.289769298Z
 src/main/java/edu/brown/cs/student/main/server/handlers/Events/ScraperUtility.java 2024-12-15T14:17:10.408803641Z
 src/main/java/edu/brown/cs/student/main/server/handlers/Pins/ClearAllPinsHandler.java 2024-12-15T14:17:10.408887723Z
 src/main/java/edu/brown/cs/student/main/server/handlers/Pins/FetchPinsHandler.java 2024-12-15T14:17:10.408951472Z
