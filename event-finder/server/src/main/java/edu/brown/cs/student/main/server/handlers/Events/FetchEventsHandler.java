@@ -33,7 +33,7 @@ public class FetchEventsHandler implements Route {
 
       List<Map<String, Object>> events = new ArrayList<>();
 
-      for (Map<String, Object> event : events) {
+      for (Map<String, Object> event : vals) {
         Map<String, Object> eventData = new HashMap<>();
 
         eventData.put("source", event.get("source"));
@@ -46,13 +46,24 @@ public class FetchEventsHandler implements Route {
         eventData.put("end_time", event.get("end_time"));
         eventData.put("attendance", event.get("attendance"));
         eventData.put("attendees", event.get("attendees"));
-        eventData.put("location", event.get("location"));
         eventData.put("category", event.get("category"));
         eventData.put("onCampus", event.get("onCampus"));
 
+
+        Map<String, Object> location = (Map<String, Object>) event.get("location");
+        if (location != null) {
+          Map<String, Object> locationData = new HashMap<>();
+          locationData.put("name", location.get("name"));
+          locationData.put("latitude", location.get("latitude"));
+          locationData.put("longitude", location.get("longitude"));
+          locationData.put("url", location.get("url"));
+          eventData.put("location", locationData);
+
+        } else {
+          eventData.put("location", null);
+        }
         events.add(eventData);
       }
-
       responseMap.put("response_type", "success");
       responseMap.put("events", events);
 

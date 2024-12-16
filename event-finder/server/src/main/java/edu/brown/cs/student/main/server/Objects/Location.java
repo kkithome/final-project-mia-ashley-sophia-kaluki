@@ -1,9 +1,15 @@
 package edu.brown.cs.student.main.server.Objects;
 
+import com.squareup.moshi.Json;
+
 public class Location {
+  @Json(name = "name")
   private String name;
+  @Json(name = "latitude")
   private String latitude;
+  @Json(name = "longitude")
   private String longitude;
+  @Json(name = "url")
   private String url;
 
   public Location(String name, String latitude, String longitude, String url) {

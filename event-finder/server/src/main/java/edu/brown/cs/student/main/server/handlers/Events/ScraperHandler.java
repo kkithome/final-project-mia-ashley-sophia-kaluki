@@ -1,6 +1,7 @@
 package edu.brown.cs.student.main.server.handlers.Events;
 
 import edu.brown.cs.student.main.server.Objects.Event;
+import edu.brown.cs.student.main.server.Objects.Location;
 import edu.brown.cs.student.main.server.Objects.Utils;
 import edu.brown.cs.student.main.server.storage.StorageInterface;
 import java.io.IOException;
@@ -83,6 +84,14 @@ public class ScraperHandler implements Route {
       eventData.put("location", event.getLocation());
       eventData.put("category", event.getCategory());
       eventData.put("onCampus", event.getOnCampus());
+
+      if (event.getLocation() != null) {
+        Location location = event.getLocation();
+        eventData.put("event_name", location.getName());
+        eventData.put("latitude", location.getLatitude());
+        eventData.put("longitude", location.getLongitude());
+        eventData.put("url", location.getUrl());
+      }
 
       this.eventStorageHandler.addDocument("general", "activities", eventID, eventData);
       allEvents.add(eventData);
