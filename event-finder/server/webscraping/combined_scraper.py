@@ -223,7 +223,7 @@ def scrape_eventbrite_events():
             # Create Event object
             event = Event(
                 source=Source.EVENTBRITE,
-                id=len(events) + 1
+                id=len(events) + 1,
                 title=title,
                 description="",  # We could fetch this from the event page if needed
                 image=img_url,
@@ -382,11 +382,10 @@ def main():
     source = sys.argv[1]
 
     try:
-      
-      brown_events = scrape_events(Source.BROWN)
-       
-      eventbrite_events = scrape_eventbrite_events()
+        brown_events = scrape_events(Source.BROWN)
 
+        eventbrite_events = scrape_eventbrite_events()
+        
         if source.lower() == "brown":
             json_ready = json.dumps([event.to_json() for event in brown_events]).encode('utf-8').decode('unicode_escape')
             print(json_ready)

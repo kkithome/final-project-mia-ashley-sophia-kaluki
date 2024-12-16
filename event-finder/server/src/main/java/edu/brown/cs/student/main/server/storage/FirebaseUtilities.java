@@ -25,8 +25,6 @@ public class FirebaseUtilities implements StorageInterface {
     String workingDirectory = System.getProperty("user.dir");
     Path firebaseConfigPath =
         Paths.get(workingDirectory, "src", "main", "resources", "firebase_config.json");
-
-    // TODO: SETUP FIREBASE - COMMENTING OUT FOR NOW
     FileInputStream serviceAccount = new FileInputStream(firebaseConfigPath.toString());
 
     FirebaseOptions options =
