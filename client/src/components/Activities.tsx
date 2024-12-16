@@ -10,6 +10,11 @@ import { activities as fileActivities, Activity } from "../activityData";
 import firebaseConfig2 from '../../resources/firebase2.js'; 
 import { useParams, useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
+import CalendarIcon from "../assets/CalendarIcon.png"; 
+import UnfilledHeart from "../assets/UnfilledHeart.png";
+import FilledHeart from "../assets/FilledHeart.png";  
+import CheckBox from "../assets/CheckBox.png"; 
+import UnfilledCheckBox from "../assets/UnfilledCheckBox.png"; 
 
 interface ActivitiesProps {
   activities: Activity[];
@@ -79,10 +84,18 @@ export default function Activities({ activities }: ActivitiesProps) {
   const navigate = useNavigate();
   const [favorites, setFavorites] = useState<string[]>([]);
   const { user } = useUser();
+  const [checkedStates, setCheckedStates] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     setActivities(activities);
   }, [activities]);
+
+  const toggleCheck = (activityId: number) => {
+    setCheckedStates((prevState) => ({
+      ...prevState,
+      [activityId]: !prevState[activityId],
+    }));
+  };
 
   useEffect(() => {
     if (!user?.id) return;
@@ -137,65 +150,6 @@ export default function Activities({ activities }: ActivitiesProps) {
       console.error("Error updating favorites:", error);
     }
   };
-  
-  // /**
-  //  * Retrieves the activities from the firebase
-  //  */
-  // const getActivities = async () => {
-  //   const collection2 = collection(db, "activities"); 
-  //   try {
-  //     const existingActivitiesSnapshot = await getDocs(collection2);
-  //     console.log(existingActivitiesSnapshot); 
-  //     const fetchedActivities: Activity[] = existingActivitiesSnapshot.docs.map((doc) => ({
-  //       id: doc.data().id,
-  //       title: doc.data().title,
-  //       description: doc.data().description,
-  //       date: doc.data().date,
-  //       startTime: doc.data().startTime,
-  //       endTime: doc.data().endTime,
-  //       image: doc.data().image,
-  //       location: doc.data().location,
-  //       attendance: doc.data().attendance,
-  //       attendees: doc.data().attendees,
-  //       time: doc.data().time,
-  //       category: doc.data().category,
-  //       onCampus: doc.data().onCampus,
-  //     }));
-  //     setActivities(fetchedActivities); 
-  //     console.log(fetchedActivities); 
-  //   }
-  //   catch (error) {
-  //     console.error("Error fetching activities:", error);
-  //   }
-  // };
-
-  // /**
-  //  * This function pushes a list of prepopulated event data to the firebase.
-  //  * It goes through the list, looks at the event IDs, and only pushes
-  //  * IDs that are new so there aren't duplicate events.
-  //  */
-  // const pushToFirestore = async () => {
-  //   const activitiesCollection = collection(db, "activities");
-  //   try {
-  //     // Get existing activities in Firestore
-  //     const existingActivitiesSnapshot = await getDocs(activitiesCollection);
-  //     const existingActivityIds = new Set(
-  //       existingActivitiesSnapshot.docs.map((doc) => doc.data().id)
-  //     );
-
-  //     // Push missing activities from the file
-  //     for (const activity of fileActivities) {
-  //       if (!existingActivityIds.has(activity.id)) {
-  //         await addDoc(activitiesCollection, activity);
-  //         console.log(`Activity with ID ${activity.id} added to Firestore.`);
-  //       } else {
-  //         console.log(`Activity with ID ${activity.id} already exists.`);
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.error("Error uploading activities:", error);
-  //   }
-  // };
 
   useEffect(() => {
     if (activities && activities.length > 0) {
@@ -259,18 +213,36 @@ export default function Activities({ activities }: ActivitiesProps) {
             </div>
             <p className="kadwa text-xs">{activity.attendees.length} Attending</p>
             </div>
-            <div className = "flex flex-row gap-4">
+            <div className = "flex flex-row gap-8 items-center justify-center">
             <button
-              className="kadwa rounded-full px-4 py-3 mt-2 mb-2 text-sm border border-black bg-gray-100 hover:bg-brown-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-black"
+              className="paytone-one text-base rounded-lg text-customBrown px-2 py-1 mt-1 mb-1 text-sm bg-gray-100 hover:bg-brown-700 hover:text-customRed focus:outline-none focus:ring-2 focus:ring-black"
               onClick={() => createICSFile(activity)}
             >
-              Add to Calendar
+              <div className="flex items-center space-x-2">
+                <img
+                  src={CalendarIcon}
+                  className="w-6 h-auto object-cover rounded-lg"
+                />
+                <span>Add to Calendar</span>
+              </div>
             </button>
-            <div className = "kadwa rounded-full px-4 py-3 mt-2 mb-2 text-sm border border-black bg-gray-100 hover:bg-brown-700 focus:outline-none focus:ring-2 focus:ring-black">
-              <label>
-                <input type="checkbox" /> Going
-              </label>
-            </div>
+            <button
+              onClick={() => toggleCheck(activity.id)}
+              className="focus:outline-none text-customBrown paytone-one text-base rounded-lg px-2 py-1 mt-1 mb-1 text-sm bg-gray-100 hover:bg-brown-700 hover:text-customRed focus:outline-none focus:ring-2 focus:ring-black"
+            >
+              <div className="flex items-center space-x-1">
+                <img
+                  src={
+                    checkedStates[activity.id] ? CheckBox : UnfilledCheckBox
+                  }
+                  alt={checkedStates[activity.id] ? "Checked" : "Unchecked"}
+                  className={`w-6 h-6 ${
+                    !checkedStates[activity.id] && ""
+                  }`}
+                />
+                <span>Going</span>
+              </div>
+            </button>
             {/* <button
               className="kadwa rounded-full px-4 py-3 mt-2 mb-2 text-sm border border-black bg-gray-100 hover:bg-brown-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-black"
               onClick={() => alert(`Added ${activity.title} to your calendar!`)}
@@ -278,12 +250,14 @@ export default function Activities({ activities }: ActivitiesProps) {
               Add to Favorites
             </button> */}
             <button
-              className={`kadwa rounded-full px-4 py-3 mt-2 mb-2 text-sm border ${
-                favorites.includes(activity.id.toString()) ? "bg-red-500 text-white" : "bg-gray-100"
-              } hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-black`}
+              // className="focus:outline-none focus:ring-0 focus:bg-none bg-none border-none p-0 m-0"
               onClick={() => toggleFavorite(activity.id)}
             >
-              {favorites.includes(activity.id.toString()) ? "Remove from Favorites" : "Add to Favorites"}
+              <img
+                src={favorites.includes(activity.id.toString()) ? FilledHeart : UnfilledHeart}
+                // alt={favorites.includes(activity.id.toString()) ? "Remove from Favorites" : "Add to Favorites"}
+                className="w-8 h-auto"
+              />
             </button>
           </div>
         </div>
