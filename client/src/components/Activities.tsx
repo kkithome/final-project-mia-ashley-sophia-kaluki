@@ -15,6 +15,7 @@ import UnfilledHeart from "../assets/UnfilledHeart.png";
 import FilledHeart from "../assets/FilledHeart.png";  
 import CheckBox from "../assets/CheckBox.png"; 
 import UnfilledCheckBox from "../assets/UnfilledCheckBox.png"; 
+import RedPin from "../assets/RedPin.png"; 
 
 interface ActivitiesProps {
   activities: Activity[];
@@ -98,6 +99,41 @@ export default function Activities({ activities }: ActivitiesProps) {
   };
 
   useEffect(() => {
+    const fetchAttendanceData = async () => {
+      if (!user?.id) return;
+
+      const attendanceCounts: Record<number, number> = {};
+      const userCheckedStates: Record<number, boolean> = {};
+
+      for (const activity of activities2) {
+        const eventId = activity.id;
+
+        try {
+          const eventRef = doc(db, "eventAttendees", eventId.toString());
+          const docSnapshot = await getDoc(eventRef);
+
+          attendanceCounts[eventId] = docSnapshot.exists()
+            ? docSnapshot.data()?.attendees?.length || 0
+            : 0;
+
+          userCheckedStates[eventId] = docSnapshot.exists()
+            ? docSnapshot.data()?.attendees?.includes(user.id)
+            : false;
+        } catch (error) {
+          console.error(`Error fetching attendance for event ${eventId}:`, error);
+        }
+      }
+
+      setAttendanceCounts(attendanceCounts);
+      setCheckedStates(userCheckedStates);
+    };
+
+    if (activities2.length > 0) {
+      fetchAttendanceData();
+    }
+  }, [activities2, user?.id]);
+
+  useEffect(() => {
     if (!user?.id) return;
     const fetchFavorites = async () => {
       try {
@@ -151,6 +187,68 @@ export default function Activities({ activities }: ActivitiesProps) {
     }
   };
 
+  const toggleAttendance = async (eventId: number) => {
+    if (!user?.id) {
+      console.error("User is not logged in");
+      return;
+    }
+  
+    const eventRef = doc(db, "eventAttendees", eventId.toString());
+  
+    try {
+      const docSnapshot = await getDoc(eventRef);
+  
+      if (!docSnapshot.exists()) {
+        console.log("Event document does not exist. Creating a new one...");
+        await setDoc(eventRef, { attendees: [] });
+      }
+  
+      const isAttending = docSnapshot.data()?.attendees?.includes(user.id);
+  
+      if (isAttending) {
+        console.log("Removing user from attendance");
+        await updateDoc(eventRef, {
+          attendees: arrayRemove(user.id),
+        });
+      } else {
+        console.log("Adding user to attendance");
+        await updateDoc(eventRef, {
+          attendees: arrayUnion(user.id),
+        });
+      }
+    } catch (error) {
+      console.error("Error updating attendance:", error);
+    }
+  };  
+
+  const fetchAttendance = async (eventId: number) => {
+    try {
+      const eventRef = doc(db, "eventAttendees", eventId.toString());
+      const docSnapshot = await getDoc(eventRef);
+  
+      return docSnapshot.exists() ? docSnapshot.data()?.attendees?.length || 0 : 0;
+    } catch (error) {
+      console.error("Error fetching attendance:", error);
+      return 0;
+    }
+  };
+
+  const [attendanceCounts, setAttendanceCounts] = useState<Record<number, number>>({});
+
+  useEffect(() => {
+    const fetchAllAttendance = async () => {
+      const counts: Record<number, number> = {};
+      for (const activity of activities2) {
+        const count = await fetchAttendance(activity.id);
+        counts[activity.id] = count;
+      }
+      setAttendanceCounts(counts);
+    };
+
+  fetchAllAttendance();
+}, [activities2]);
+  
+
   useEffect(() => {
     if (activities && activities.length > 0) {
       setActivities(activities);
@@ -167,7 +265,9 @@ export default function Activities({ activities }: ActivitiesProps) {
             startTime: doc.data().startTime,
             endTime: doc.data().endTime,
             image: doc.data().image,
-            location: doc.data().location,
+            latitude: doc.data().latitude,
+            longitude: doc.data().longitude,
+            location: doc.data().location.name,
             attendance: doc.data().attendance,
             attendees: doc.data().attendees,
             time: doc.data().time,
@@ -188,7 +288,7 @@ export default function Activities({ activities }: ActivitiesProps) {
       {activities2.map((activity) => (
         <div
           key={activity.id}
-          className="border border-customLightBrown bg-customLightBrown rounded-2xl p-4 w-96 h-130 text-center space-y-2"
+          className="border border-customLightBrown bg-customLightBrown rounded-2xl p-4 w-96 h-130 text-center space-y-3"
         >
           <img
             src={activity.image}
@@ -196,14 +296,14 @@ export default function Activities({ activities }: ActivitiesProps) {
             className="w-full h-40 object-cover rounded-lg"
           />
           <h2
-            className="paytone-one text-customRed text-left cursor-pointer"
+            className="paytone-one text-customRed text-xl text-left cursor-pointer"
             onClick={() => navigate(`/activity/${activity.id}`)}
           >
             {activity.title}
           </h2>
           <p className="kadwa text-xs text-left">{activity.description}</p>
           <div className="kadwa flex justify-between flex-row text-s text-left space-x-3">
-            <div className="flex flex-col">
+            <div className="flex flex-col space-y-1">
               <p>
                 {/* <strong>Date:</strong>  */}
                 {activity.date}
@@ -212,8 +312,17 @@ export default function Activities({ activities }: ActivitiesProps) {
                 {/* <strong>Time:</strong>  */}
                 {activity.startTime}
               </p>
+              <div className="flex flex-row space-x-2">
+               <img
+                  src={RedPin}
+                  className="w-4 h-4 object-cover rounded-lg"
+                />
+                <p className="text-xs"><u>
+                  {activity.location}</u>
+                </p>
+              </div>
             </div>
-            <p className="kadwa text-xs">{activity.attendees.length} Attending</p>
+            <p className="kadwa text-xs">{attendanceCounts[activity.id] || 0} Attending</p>
             </div>
             <div className = "flex flex-row gap-7 items-center justify-center">
             <button
@@ -229,7 +338,10 @@ export default function Activities({ activities }: ActivitiesProps) {
               </div>
             </button>
             <button
-              onClick={() => toggleCheck(activity.id)}
+              onClick={async () => {
+                toggleCheck(activity.id); 
+                await toggleAttendance(activity.id);
+              }}
               className="focus:outline-none text-customBrown paytone-one text-base rounded-lg px-2 py-1 mt-1 mb-1 text-sm bg-gray-100 hover:bg-brown-700 hover:text-customRed focus:outline-none focus:ring-2 focus:ring-black"
             >
               <div className="flex items-center space-x-1">
