@@ -18,14 +18,14 @@ code {
 
 
 
-button:hover {
+/* button:hover {
   border-color: black;
   background-color: Brown;
   color: white;
-}
+} */
 
-button:focus,
+/* button:focus, */
 
-button:focus-visible {
+/* button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
-}
+} */

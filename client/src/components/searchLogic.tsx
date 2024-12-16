@@ -17,21 +17,26 @@ const searchActivities = async (keyword: string = "", filters: any = {}) => {
 
     const querySnapshot = await getDocs(baseQuery);
 
-    let fetchedActivities: Activity[] = querySnapshot.docs.map((doc) => ({
-      id: doc.data().id,
-      title: doc.data().title,
-      description: doc.data().description,
-      date: doc.data().date,
-      startTime: doc.data().startTime,
-      endTime: doc.data().endTime,
-      image: doc.data().image,
-      location: doc.data().location,
-      attendance: doc.data().attendance,
-      attendees: doc.data().attendees,
-      time: doc.data().time,
-      category: doc.data().category,
-      onCampus: doc.data().onCampus,
-    }));
+    let fetchedActivities: Activity[] = querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: data.id,
+        title: data.title,
+        description: data.description,
+        date: data.date,
+        startTime: data.startTime,
+        endTime: data.endTime,
+        image: data.image,
+        location: typeof data.location === "object" && data.location.name ? data.location.name : "Unknown",
+        latitude: data.location?.latitude || "Unknown",
+        longitude: data.location?.longitude || "Unknown",
+        attendance: data.attendance,
+        attendees: data.attendees,
+        time: data.time,
+        category: data.category,
+        onCampus: data.onCampus,
+      };
+    });    
 
     if (keyword) {
       fetchedActivities = fetchedActivities.filter(
