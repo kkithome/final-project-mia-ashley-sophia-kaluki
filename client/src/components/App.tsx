@@ -53,18 +53,18 @@ function App() {
       <div className="bg-customBrown min-h-screen flex flex-col">
         <main className="flex-grow">
           <div className="space-y-32 relative">
-            <div className="flex flex-row justify-stretch">
+          <div className="flex flex-row items-center justify-between h-16 md:h-20">
               <SignedIn>
                 <div className = "basis-1/4">
                 </div>
-                <div className="basis-1/2 flex flex-row items-center justify-center">
+                <div className="basis-1/2 flex flex-row items-center justify-center mt-4 md:mt-6 lg:mt-10">
                 <img
                   src={Bear4}
                   alt="A bear"
-                  className="w-12 md:w-32 h-auto overflow-hidden relative"
+                  className="w-16 md:w-24 lg:w-32 h-auto object-contain"
                 />
-                  <p
-                    className="limelight text-1xl md:text-6xl text-white"
+                <p
+                    className="limelight text-2xl md:text-5xl lg:text-7xl text-white"
                     aria-label="Page Title"
                   >
                     Bear Tracks
@@ -74,9 +74,8 @@ function App() {
                   <div className="mx-4 my-auto">
                     <UserButton />
                   </div>
-                  <div className="paytone-one bg-customRed text-white rounded-lg flex items-center justify-center text-md px-2 py-1 md:px-4 md:py-2 md:text-xl">
+                  <div className="paytone-one bg-customRed text-white rounded-lg flex items-center justify-center text-sm px-2 py-1 md:px-3 md:py-2 md:text-lg">
                     <SignOutButton>LOG OUT</SignOutButton>
-                    
                   </div>
                 </div>
               </SignedIn>

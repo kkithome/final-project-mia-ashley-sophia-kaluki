@@ -11,6 +11,7 @@ import { db } from "./Activities";
 import { Activity } from "../activityData";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import Bear2 from "../assets/Bear2.png"; 
+import SearchIcon from "../assets/SearchIcon.png"; 
 
 enum Section {
   MAP_DEMO = "MAP_DEMO",
@@ -31,15 +32,22 @@ export default function ActivitiesFinder() {
 
   return (
     <div className="space-y-10">
-      <div className="flex flex-row item-center justify-center w-full mt-3">
+      <div className="flex flex-row item-center justify-center mt-8 lg:mt-12 space-x-5">
         <a
           href="/searcher"
-          className="paytone-one bg-customRed text-white rounded-lg text-3xl px-7 py-1 md:px-6 md:py-2 md:text-5xl mt-8 ml-12"
+          className="kadwa bg-white text-gray-600 rounded-2xl text-xl md:text-lg w-60 h-10 flex items-center pl-4"
         >
-          Search
+          <div className="flex flex-row space-x-24 items-center justify-center">
+          <span>Search...</span>
+          <img
+              src={SearchIcon}
+              alt="Search Icon"
+              className="w-8 h-auto overflow-hidden relative"
+            />
+            </div>
         </a>
         <button
-          className="paytone-one bg-customRed text-white rounded-lg text-3xl px-7 py-1 md:px-6 md:py-2 md:text-5xl mt-8 ml-12 mr-4"
+          className="paytone-one bg-customRed text-white rounded-lg text-2xl md:text-2xl w-48 h-10"
           onClick={() => navigate("/user-profile")}
         >
           User Profile
@@ -63,7 +71,7 @@ export default function ActivitiesFinder() {
             <img
               src={Bear2}
               alt="A bear"
-              className="w-32 md:w-32 h-auto overflow-hidden relative"
+              className="w-24 md:w-32 lg:48 h-auto overflow-hidden relative"
             />
           </div>
         </div>

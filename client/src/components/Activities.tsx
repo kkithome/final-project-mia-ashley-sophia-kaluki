@@ -205,17 +205,19 @@ export default function Activities({ activities }: ActivitiesProps) {
           <div className="kadwa flex justify-between flex-row text-s text-left space-x-3">
             <div className="flex flex-col">
               <p>
-                <strong>Date:</strong> {activity.date}
+                {/* <strong>Date:</strong>  */}
+                {activity.date}
               </p>
               <p>
-                <strong>Time:</strong> {activity.startTime}
+                {/* <strong>Time:</strong>  */}
+                {activity.startTime}
               </p>
             </div>
             <p className="kadwa text-xs">{activity.attendees.length} Attending</p>
             </div>
-            <div className = "flex flex-row gap-8 items-center justify-center">
+            <div className = "flex flex-row gap-7 items-center justify-center">
             <button
-              className="paytone-one text-base rounded-lg text-customBrown px-2 py-1 mt-1 mb-1 text-sm bg-gray-100 hover:bg-brown-700 hover:text-customRed focus:outline-none focus:ring-2 focus:ring-black"
+              className="paytone-one text-sm md:text-sm rounded-lg text-customBrown px-2 py-1 mt-1 mb-1 bg-gray-100 hover:bg-brown-700 hover:text-customRed focus:outline-none focus:ring-2 focus:ring-black"
               onClick={() => createICSFile(activity)}
             >
               <div className="flex items-center space-x-2">
