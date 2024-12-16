@@ -287,9 +287,10 @@ export default function Activities({ activities }: ActivitiesProps) {
     <div className="flex flex-row items-center justify-center flex-wrap gap-8 space-x-5 md:space-x-8">
       {activities2.map((activity) => (
         <div
-          key={activity.id}
-          className="border border-customLightBrown bg-customLightBrown rounded-2xl p-4 w-96 h-130 text-center space-y-3"
-        >
+        key={activity.id}
+        className="border border-customLightBrown bg-customLightBrown rounded-2xl p-4 w-96 min-h-[440px] flex flex-col justify-between gap-4"
+      >
+        <div className="flex flex-col gap-2">
           <img
             src={activity.image}
             alt={activity.title}
@@ -301,80 +302,63 @@ export default function Activities({ activities }: ActivitiesProps) {
           >
             {activity.title}
           </h2>
-          <p className="kadwa text-xs text-left">{activity.description}</p>
-          <div className="kadwa flex justify-between flex-row text-s text-left space-x-3">
-            <div className="flex flex-col space-y-1">
-              <p>
-                {/* <strong>Date:</strong>  */}
-                {activity.date}
-              </p>
-              <p>
-                {/* <strong>Time:</strong>  */}
-                {activity.startTime}
-              </p>
-              <div className="flex flex-row space-x-2">
-               <img
-                  src={RedPin}
-                  className="w-4 h-4 object-cover rounded-lg"
-                />
-                <p className="text-xs"><u>
-                  {activity.location}</u>
-                </p>
-              </div>
-            </div>
-            <p className="kadwa text-xs">{attendanceCounts[activity.id] || 0} Attending</p>
-            </div>
-            <div className = "flex flex-row gap-7 items-center justify-center">
-            <button
-              className="paytone-one text-sm md:text-sm rounded-lg text-customBrown px-2 py-1 mt-1 mb-1 bg-gray-100 hover:bg-brown-700 hover:text-customRed focus:outline-none focus:ring-2 focus:ring-black"
-              onClick={() => createICSFile(activity)}
-            >
-              <div className="flex items-center space-x-2">
-                <img
-                  src={CalendarIcon}
-                  className="w-6 h-auto object-cover rounded-lg"
-                />
-                <span>Add to Calendar</span>
-              </div>
-            </button>
-            <button
-              onClick={async () => {
-                toggleCheck(activity.id); 
-                await toggleAttendance(activity.id);
-              }}
-              className="focus:outline-none text-customBrown paytone-one text-base rounded-lg px-2 py-1 mt-1 mb-1 text-sm bg-gray-100 hover:bg-brown-700 hover:text-customRed focus:outline-none focus:ring-2 focus:ring-black"
-            >
-              <div className="flex items-center space-x-1">
-                <img
-                  src={
-                    checkedStates[activity.id] ? CheckBox : UnfilledCheckBox
-                  }
-                  alt={checkedStates[activity.id] ? "Checked" : "Unchecked"}
-                  className={`w-6 h-6 ${
-                    !checkedStates[activity.id] && ""
-                  }`}
-                />
-                <span>Going</span>
-              </div>
-            </button>
-            {/* <button
-              className="kadwa rounded-full px-4 py-3 mt-2 mb-2 text-sm border border-black bg-gray-100 hover:bg-brown-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-black"
-              onClick={() => alert(`Added ${activity.title} to your calendar!`)}
-            >
-              Add to Favorites
-            </button> */}
-            <button
-              // className="focus:outline-none focus:ring-0 focus:bg-none bg-none border-none p-0 m-0"
-              onClick={() => toggleFavorite(activity.id)}
-            >
-              <img
-                src={favorites.includes(activity.id.toString()) ? FilledHeart : UnfilledHeart}
-                // alt={favorites.includes(activity.id.toString()) ? "Remove from Favorites" : "Add to Favorites"}
-                className="w-8 h-auto"
-              />
-            </button>
-          </div>
         </div>
+      
+        <p className="kadwa text-xs text-left overflow-hidden text-ellipsis">
+          {activity.description}
+        </p>
+      
+        <div className="kadwa flex text-s space-x-1">
+          <div className="flex flex-col space-y-1">
+            <p>{activity.date}</p>
+            <p>{activity.startTime}</p>
+            <div className="flex flex-row space-x-2 max-w-[275px] min-w-[275px]">
+              <img src={RedPin} className="w-4 h-4 object-cover rounded-lg" />
+              <p className="text-xs">
+                <u>{activity.location}</u>
+              </p>
+            </div>
+          </div>
+          <p className="kadwa text-xs font-bold" style={{ marginLeft: '-3px' }}>
+            {attendanceCounts[activity.id] || 0} Attending
+          </p>
+        </div>
+      
+        <div className="flex flex-row gap-7 items-center justify-center">
+          <button
+            className="paytone-one text-sm md:text-sm rounded-lg text-customBrown px-2 py-1 mt-1 mb-1 bg-gray-100 hover:bg-brown-700 hover:text-customRed focus:outline-none focus:ring-2 focus:ring-black"
+            onClick={() => createICSFile(activity)}
+          >
+            <div className="flex items-center space-x-2">
+              <img src={CalendarIcon} className="w-6 h-auto object-cover rounded-lg" />
+              <span>Add to Calendar</span>
+            </div>
+          </button>
+          <button
+            onClick={async () => {
+              toggleCheck(activity.id);
+              await toggleAttendance(activity.id);
+            }}
+            className="focus:outline-none text-customBrown paytone-one text-base rounded-lg px-2 py-1 mt-1 mb-1 text-sm bg-gray-100 hover:bg-brown-700 hover:text-customRed focus:outline-none focus:ring-2 focus:ring-black"
+          >
+            <div className="flex items-center space-x-1">
+              <img
+                src={checkedStates[activity.id] ? CheckBox : UnfilledCheckBox}
+                alt={checkedStates[activity.id] ? 'Checked' : 'Unchecked'}
+                className="w-6 h-6"
+              />
+              <span>Going</span>
+            </div>
+          </button>
+          <button onClick={() => toggleFavorite(activity.id)}>
+            <img
+              src={favorites.includes(activity.id.toString()) ? FilledHeart : UnfilledHeart}
+              className="w-8 h-auto"
+            />
+          </button>
+        </div>
+      </div>
+      
       ))}
     </div>
   );
