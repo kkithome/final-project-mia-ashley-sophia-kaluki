@@ -1,22 +1,93 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
+import { db } from "./Activities";
+import { doc, getDoc, getDocs, collection, query, where } from "firebase/firestore";
+
+interface ActivityEvent {
+  id: string;
+  title: string;
+}
 
 export default function UserP() {
   const { user } = useUser();
   const [isAnonymous, setIsAnonymous] = useState(false);
-
-  const favoritedEvents = [
-    { id: 1, title: "Music Festival" },
-    { id: 2, title: "Coding Workshop" },
-  ];
-
-  const upcomingEvents = [
-    { id: 1, title: "Art Exhibit" },
-    { id: 2, title: "Tech Conference" },
-  ];
-
+  const [favoritedEvents, setFavoritedEvents] = useState<ActivityEvent[]>([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [upcomingEvents, setUpcomingEvents] = useState<ActivityEvent[]>([]);
+
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      if (!user?.id) {
+        console.warn("No user ID found");
+        setLoading(false);
+        return;
+      }
+    
+      console.log("Fetching favorites for user:", user.id);
+    
+      try {
+        const favoritesRef = doc(db, "favorites", user.id);
+        const docSnapshot = await getDoc(favoritesRef);
+    
+        if (docSnapshot.exists()) {
+          const favoriteEventIds: string[] = docSnapshot.data().activityIds || [];
+          console.log("Favorite event IDs:", favoriteEventIds);
+    
+          const activitiesCollection = collection(db, "activities");
+          const activitiesSnapshot = await getDocs(activitiesCollection);
+    
+          const events: ActivityEvent[] = activitiesSnapshot.docs
+            .filter((doc) => {
+              const activityId = doc.data().id;
+              return favoriteEventIds.includes(activityId.toString());
+            })
+            .map((doc) => ({
+              id: doc.data().id,
+              title: doc.data().title,
+            }));
+    
+          console.log("Filtered favorited events:", events);
+    
+          setFavoritedEvents(events);
+        } else {
+          console.log("No favorites document found for user ID:", user.id);
+        }
+      } catch (error) {
+        console.error("Error fetching favorited events:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchUpcomingEvents = async () => {
+      try {
+        const today = new Date().toISOString().split("T")[0]; 
+        const activitiesCollection = collection(db, "activities");
+        const upcomingQuery = query(activitiesCollection, where("date", ">=", today));
+        const querySnapshot = await getDocs(upcomingQuery);
+
+        const events: ActivityEvent[] = querySnapshot.docs.map((doc) => ({
+          id: doc.data().id,
+          title: doc.data().title,
+          date: doc.data().date,
+        }));
+
+        console.log("Upcoming events:", events);
+        setUpcomingEvents(events);
+      } catch (error) {
+        console.error("Error fetching upcoming events:", error);
+      }
+    };
+    
+    fetchFavorites();
+    fetchUpcomingEvents();
+    
+  }, [user?.id]);
+
+  
+
   const backToMain = () => {
     navigate("/"); 
   };

@@ -6,7 +6,7 @@ import "../styles/index.css";
 import "../output.css";
 import Bear4 from "../assets/Bear4.png";
 import { UserButton } from "@clerk/clerk-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { db } from "./Activities";
 import { Activity } from "../activityData";
 import { collection, query, where, getDocs } from "firebase/firestore";
@@ -19,88 +19,15 @@ enum Section {
 
 export default function ActivitiesFinder() {
   const navigate = useNavigate();
-  const [searchResults, setSearchResults] = useState<Activity[]>([]);
-  const [searchInput, setSearchTerm] = useState<any>(null);
+  const location = useLocation();
+  const initialSearchResults = location.state?.searchResults || [];
+  const [searchResults, setSearchResults] = useState(initialSearchResults);
 
-  // useEffect(() => {
-  //   setActivities(searchResults);
-  // }, [searchResults]);
-
-  const searchActivities = async (keyword: string = "", filters: any = {}) => {
-    let { isOnCampus, startDate, endDate, startTime, category } = filters;
-    const searchCollection = collection(db, "activities");
-
-    if (!startDate) {
-      const today = new Date().toISOString().split("T")[0];
-      startDate = today;
-      console.log(today);
+  useEffect(() => {
+    if (!location.state?.searchResults) {
+      console.warn("No search results passed. Falling back to default activities.");
     }
-
-    console.log(startDate);
-    console.log(category);
-    try {
-      let baseQuery = query(searchCollection, where("date", ">=", startDate));
-      console.log("Base query after startDate:", baseQuery);
-
-      // if (endDate) {
-      //   baseQuery = query(baseQuery, where("date", "<=", endDate));
-      // }
-
-      // if (isOnCampus !== undefined) {
-      //   const locationFilter = isOnCampus ? "on-campus" : "off-campus";
-      //   baseQuery = query(baseQuery, where("location", "==", locationFilter));
-      // }
-
-      if (category) {
-        baseQuery = query(baseQuery, where("category", "==", category));
-      }
-
-      const querySnapshot = await getDocs(baseQuery);
-      let fetchedActivities: Activity[] = querySnapshot.docs.map((doc) => ({
-        id: doc.data().id,
-        title: doc.data().title,
-        description: doc.data().description,
-        date: doc.data().date,
-        startTime: doc.data().startTime,
-        endTime: doc.data().endTime,
-        image: doc.data().image,
-        location: doc.data().location,
-        attendance: doc.data().attendance,
-        attendees: doc.data().attendees,
-        time: doc.data().time,
-        category: doc.data().category,
-        onCampus: doc.data().onCampus,
-      }));
-
-      console.log(`fetched activities: ${fetchedActivities}`);
-
-      if (keyword) {
-        console.log("Filtering activities by keyword:", keyword);
-        console.log(`fetched activities: ${fetchedActivities}`);
-
-        fetchedActivities = fetchedActivities.filter(
-          (activity) =>
-            activity.title.toLowerCase().includes(keyword.toLowerCase()) ||
-            activity.description.toLowerCase().includes(keyword.toLowerCase())
-        );
-
-        if (fetchedActivities.length > 0) {
-          setSearchResults(fetchedActivities);
-        } else {
-          console.log("No activities match the keyword");
-        }
-      } else {
-        setSearchResults(fetchedActivities);
-      }
-    } catch (error) {
-      console.error("Error fetching activities:", error);
-    }
-  };
-
-  const [isOnCampusState, setIsOnCampusState] = useState<boolean | null>(null);
-  let [startDateState, setStartDateState] = useState<string | null>(null);
-  const [endDateState, setEndDateState] = useState<string | null>(null);
-  const [categoryState, setCategoryState] = useState<string | null>(null);
+  }, [location.state]);
 
   return (
     <div className="space-y-10">
