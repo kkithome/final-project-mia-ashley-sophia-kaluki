@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import '../output.css';
 import '../styles/App.css';
 import '../styles/index.css';
@@ -8,6 +9,7 @@ import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import { activities as fileActivities, Activity } from "../activityData";
 import firebaseConfig2 from '../../resources/firebase2.js'; 
 import { useParams, useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
 
 interface ActivitiesProps {
   activities: Activity[];
@@ -75,77 +77,157 @@ const convertTo24Hour = (time: string) => {
 export default function Activities({ activities }: ActivitiesProps) {
   const [activities2, setActivities] = useState<Activity[]>([]); 
   const navigate = useNavigate();
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const { user } = useUser();
 
   useEffect(() => {
     setActivities(activities);
   }, [activities]);
 
-  /**
-   * Retrieves the activities from the firebase
-   */
-  const getActivities = async () => {
-    const collection2 = collection(db, "activities"); 
-    try {
-      const existingActivitiesSnapshot = await getDocs(collection2);
-      console.log(existingActivitiesSnapshot); 
-      const fetchedActivities: Activity[] = existingActivitiesSnapshot.docs.map((doc) => ({
-        id: doc.data().id,
-        title: doc.data().title,
-        description: doc.data().description,
-        date: doc.data().date,
-        startTime: doc.data().startTime,
-        endTime: doc.data().endTime,
-        image: doc.data().image,
-        location: doc.data().location,
-        attendance: doc.data().attendance,
-        attendees: doc.data().attendees,
-        time: doc.data().time,
-        category: doc.data().category,
-        onCampus: doc.data().onCampus,
-      }));
-      setActivities(fetchedActivities); 
-      console.log(fetchedActivities); 
-    }
-    catch (error) {
-      console.error("Error fetching activities:", error);
-    }
-  };
-
-  /**
-   * This function pushes a list of prepopulated event data to the firebase.
-   * It goes through the list, looks at the event IDs, and only pushes
-   * IDs that are new so there aren't duplicate events.
-   */
-  const pushToFirestore = async () => {
-    const activitiesCollection = collection(db, "activities");
-    try {
-      // Get existing activities in Firestore
-      const existingActivitiesSnapshot = await getDocs(activitiesCollection);
-      const existingActivityIds = new Set(
-        existingActivitiesSnapshot.docs.map((doc) => doc.data().id)
-      );
-
-      // Push missing activities from the file
-      for (const activity of fileActivities) {
-        if (!existingActivityIds.has(activity.id)) {
-          await addDoc(activitiesCollection, activity);
-          console.log(`Activity with ID ${activity.id} added to Firestore.`);
-        } else {
-          console.log(`Activity with ID ${activity.id} already exists.`);
+  useEffect(() => {
+    if (!user?.id) return;
+    const fetchFavorites = async () => {
+      try {
+        const favoritesRef = doc(db, "favorites", user.id);
+        const docSnapshot = await getDoc(favoritesRef);
+        if (docSnapshot.exists()) {
+          setFavorites(docSnapshot.data().activityIds || []);
         }
+      } catch (error) {
+        console.error("Error fetching favorites:", error);
+      }
+    };
+    fetchFavorites();
+  }, [user?.id]);
+
+  const toggleFavorite = async (activityId: number) => {
+    if (!user?.id) {
+      console.error("User is not logged in");
+      return;
+    }
+
+    const activityIdStr = activityId.toString();
+    console.log("Toggling favorite for activity:", activityIdStr);
+
+    try {
+      const favoritesRef = doc(db, "favorites", user.id);
+      const docSnapshot = await getDoc(favoritesRef);
+
+      if (!docSnapshot.exists()) {
+        console.log("Favorites document does not exist. Creating a new one...");
+        await setDoc(favoritesRef, { activityIds: [] });
+      }
+
+      const isFavorite = favorites.includes(activityIdStr);
+
+      if (isFavorite) {
+        console.log("Removing from favorites");
+        await updateDoc(favoritesRef, {
+          activityIds: arrayRemove(activityIdStr),
+        });
+        setFavorites((prev) => prev.filter((id) => id !== activityIdStr));
+      } else {
+        console.log("Adding to favorites");
+        await updateDoc(favoritesRef, {
+          activityIds: arrayUnion(activityIdStr),
+        });
+        setFavorites((prev) => [...prev, activityIdStr]);
       }
     } catch (error) {
-      console.error("Error uploading activities:", error);
+      console.error("Error updating favorites:", error);
     }
   };
+  
+  // /**
+  //  * Retrieves the activities from the firebase
+  //  */
+  // const getActivities = async () => {
+  //   const collection2 = collection(db, "activities"); 
+  //   try {
+  //     const existingActivitiesSnapshot = await getDocs(collection2);
+  //     console.log(existingActivitiesSnapshot); 
+  //     const fetchedActivities: Activity[] = existingActivitiesSnapshot.docs.map((doc) => ({
+  //       id: doc.data().id,
+  //       title: doc.data().title,
+  //       description: doc.data().description,
+  //       date: doc.data().date,
+  //       startTime: doc.data().startTime,
+  //       endTime: doc.data().endTime,
+  //       image: doc.data().image,
+  //       location: doc.data().location,
+  //       attendance: doc.data().attendance,
+  //       attendees: doc.data().attendees,
+  //       time: doc.data().time,
+  //       category: doc.data().category,
+  //       onCampus: doc.data().onCampus,
+  //     }));
+  //     setActivities(fetchedActivities); 
+  //     console.log(fetchedActivities); 
+  //   }
+  //   catch (error) {
+  //     console.error("Error fetching activities:", error);
+  //   }
+  // };
+
+  // /**
+  //  * This function pushes a list of prepopulated event data to the firebase.
+  //  * It goes through the list, looks at the event IDs, and only pushes
+  //  * IDs that are new so there aren't duplicate events.
+  //  */
+  // const pushToFirestore = async () => {
+  //   const activitiesCollection = collection(db, "activities");
+  //   try {
+  //     // Get existing activities in Firestore
+  //     const existingActivitiesSnapshot = await getDocs(activitiesCollection);
+  //     const existingActivityIds = new Set(
+  //       existingActivitiesSnapshot.docs.map((doc) => doc.data().id)
+  //     );
+
+  //     // Push missing activities from the file
+  //     for (const activity of fileActivities) {
+  //       if (!existingActivityIds.has(activity.id)) {
+  //         await addDoc(activitiesCollection, activity);
+  //         console.log(`Activity with ID ${activity.id} added to Firestore.`);
+  //       } else {
+  //         console.log(`Activity with ID ${activity.id} already exists.`);
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error("Error uploading activities:", error);
+  //   }
+  // };
 
   useEffect(() => {
-    const initializeActivities = async () => {
-      await pushToFirestore();
-      await getActivities();
-    };
-    initializeActivities();
-  }, []);
+    if (activities && activities.length > 0) {
+      setActivities(activities);
+    } else {
+      const fetchActivities = async () => {
+        const collectionRef = collection(db, "activities");
+        try {
+          const existingActivitiesSnapshot = await getDocs(collectionRef);
+          const fetchedActivities: Activity[] = existingActivitiesSnapshot.docs.map((doc) => ({
+            id: doc.data().id,
+            title: doc.data().title,
+            description: doc.data().description,
+            date: doc.data().date,
+            startTime: doc.data().startTime,
+            endTime: doc.data().endTime,
+            image: doc.data().image,
+            location: doc.data().location,
+            attendance: doc.data().attendance,
+            attendees: doc.data().attendees,
+            time: doc.data().time,
+            category: doc.data().category,
+            onCampus: doc.data().onCampus,
+          }));
+          setActivities(fetchedActivities);
+        } catch (error) {
+          console.error("Error fetching activities:", error);
+        }
+      };
+      fetchActivities();
+    }
+  }, [activities]);
 
   return (
     <div className="flex flex-row items-center justify-center flex-wrap gap-8 space-x-5 md:space-x-8">
@@ -189,11 +271,19 @@ export default function Activities({ activities }: ActivitiesProps) {
                 <input type="checkbox" /> Going
               </label>
             </div>
-            <button
+            {/* <button
               className="kadwa rounded-full px-4 py-3 mt-2 mb-2 text-sm border border-black bg-gray-100 hover:bg-brown-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-black"
               onClick={() => alert(`Added ${activity.title} to your calendar!`)}
             >
               Add to Favorites
+            </button> */}
+            <button
+              className={`kadwa rounded-full px-4 py-3 mt-2 mb-2 text-sm border ${
+                favorites.includes(activity.id.toString()) ? "bg-red-500 text-white" : "bg-gray-100"
+              } hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-black`}
+              onClick={() => toggleFavorite(activity.id)}
+            >
+              {favorites.includes(activity.id.toString()) ? "Remove from Favorites" : "Add to Favorites"}
             </button>
           </div>
         </div>

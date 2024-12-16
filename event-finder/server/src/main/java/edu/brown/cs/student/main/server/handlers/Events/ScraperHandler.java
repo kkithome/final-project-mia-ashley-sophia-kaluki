@@ -1,5 +1,9 @@
 package edu.brown.cs.student.main.server.handlers.Events;
 
+import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.DocumentSnapshot;
+import com.google.cloud.firestore.Firestore;
+import com.google.firebase.cloud.FirestoreClient;
 import edu.brown.cs.student.main.server.Objects.Event;
 import edu.brown.cs.student.main.server.Objects.Location;
 import edu.brown.cs.student.main.server.Objects.Utils;
@@ -20,6 +24,8 @@ public class ScraperHandler implements Route {
   public ScraperHandler(StorageInterface eventStorageHandler) {
     this.eventStorageHandler = eventStorageHandler;
   }
+
+  Firestore db = FirestoreClient.getFirestore();
 
   @Override
   public Object handle(Request request, Response response) throws Exception {
@@ -49,10 +55,8 @@ public class ScraperHandler implements Route {
   }
 
   private void saveToFirestore(List<Event> events) throws ExecutionException, InterruptedException {
-    Map<String, Object> eventData = new HashMap<>();
 
-    List<Map<String, Object>> allEvents =
-        this.eventStorageHandler.getCollection("general", "activities");
+    List<Map<String, Object>> allEvents = this.eventStorageHandler.getCollection("activities");
 
     if (allEvents == null) {
       allEvents = new ArrayList<>();
@@ -63,14 +67,16 @@ public class ScraperHandler implements Route {
       String eventDate = event.getDate();
       String eventID = eventSource + " - " + eventTitle + " " + eventDate;
 
-      boolean eventInFirestore =
-          this.eventStorageHandler.docExists("general", "activities", eventID);
+      DocumentReference docRef = db.collection("activities").document(eventID);
 
-      if (eventInFirestore) {
+      DocumentSnapshot docSnapShot = docRef.get().get();
+
+      if (docSnapShot.exists()) {
         System.out.println("Event already exists: " + eventID);
         continue;
       }
 
+      Map<String, Object> eventData = new HashMap<>();
       eventData.put("source", event.getSource());
       eventData.put("id", event.getId());
       eventData.put("title", event.getTitle());
@@ -93,7 +99,7 @@ public class ScraperHandler implements Route {
         eventData.put("url", location.getUrl());
       }
 
-      this.eventStorageHandler.addDocument("general", "activities", eventID, eventData);
+      this.eventStorageHandler.addDocument("activities", eventID, eventData);
       allEvents.add(eventData);
     }
   }

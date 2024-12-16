@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "./Activities";
+import { Activity } from "../activityData";
+import searchActivities from "./searchLogic";
 
 import Bear4 from '../assets/Bear4.png';
 
@@ -45,7 +49,7 @@ const styles = `
 
 export default function Searcher() {
     const navigate = useNavigate();
-    
+    const [searchResults, setSearchResults] = useState([]);
 
     const [formData, setFormData] = useState({
         keyword: '',
@@ -66,10 +70,24 @@ export default function Searcher() {
     };
 
     
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         console.log('Form submitted:', formData);
-    
+        
+        const filters = {
+            isOnCampus: formData.isOnCampus,
+            startDate: formData.date,
+            endDate: null,
+            category: formData.eventCategory,
+        };
+
+        try {
+            const results = await searchActivities(formData.keyword, filters);
+            navigate("/", { state: { searchResults: results } });
+            console.log("Search Results:", results);
+          } catch (error) {
+            console.error("Error during search:", error);
+          }
     };
 
     const handleBack = () => {
@@ -98,7 +116,7 @@ export default function Searcher() {
             </button>
 
             <div className="bg-[#E5DDD5] rounded-3xl p-12 max-w-4xl mx-auto">
-                <form >
+                <form onSubmit={handleSubmit}>
                     {/* Keyword + categorization */}
                     <div className="flex gap-8 mb-8">
                         <div className="flex-1">
@@ -121,9 +139,17 @@ export default function Searcher() {
                                 className="w-full p-3 rounded border border-gray-300 bg-white appearance-none"
                             >
                                 <option value="">Select Category</option>
-                                <option value="Food">Food</option>
+                                <option value="food-and-drink">Food</option>
                                 <option value="Workshop">Workshop</option>
-                                <option value="Music">Music</option>
+                                <option value="music">Music</option>
+                                <option value="Show">Show</option>
+                                <option value="Brown event">Brown event</option>
+                                <option value="holiday">Holiday</option>
+                                <option value="fashion">Fashion</option>
+                                <option value="arts">Arts</option>
+                                <option value="community">Community</option>
+                                <option value="spirituality">Spirituality</option>
+                                <option value="home-and-lifestyle">Home & Lifestyle</option>
                             </select>
                         </div>
                     </div>
@@ -188,8 +214,8 @@ export default function Searcher() {
                         <button 
                             type="submit"
                             className="bg-red-700 text-white px-12 py-4 rounded-lg paytone text-submit hover:bg-red-800 transition uppercase"
-                            formMethod= "get"
-                            formAction= "/activities"
+                            // formMethod= "get"
+                            // formAction= "/activities"
                         >
                             Submit Search
                         </button>

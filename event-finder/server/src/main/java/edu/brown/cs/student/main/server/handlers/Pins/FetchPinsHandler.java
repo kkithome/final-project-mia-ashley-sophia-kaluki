@@ -31,10 +31,10 @@ public class FetchPinsHandler implements Route {
     Map<String, Object> responseMap = new HashMap<>();
     try {
       System.out.println("Listing all pins");
-      List<Map<String, Object>> vals = this.pinsStorageHandler.getCollection("all_users", "pins");
+      List<Map<String, Object>> vals = this.pinsStorageHandler.getCollection("pins");
 
       if (vals == null) {
-        responseMap.put("respose_type", "failure");
+        responseMap.put("response_type", "failure");
         responseMap.put("error", "No pins found");
         return Utils.toMoshiJson(responseMap);
       }
