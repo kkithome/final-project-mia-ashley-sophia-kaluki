@@ -22,7 +22,7 @@ public class FetchEventsHandler implements Route {
     Map<String,Object> responseMap = new HashMap<>();
     try {
       System.out.println("Listing all events");
-      List<Map<String, Object>> vals = this.eventStorageHandler.getCollection("general", "activities");
+      List<Map<String, Object>> vals = this.eventStorageHandler.getCollection("activities");
 
       if (vals == null) {
         responseMap.put("response_type", "failure");

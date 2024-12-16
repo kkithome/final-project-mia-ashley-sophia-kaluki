@@ -38,7 +38,7 @@ public class ClearUserHandler implements Route {
       }
       Firestore db = FirestoreClient.getFirestore();
       System.out.println("clearing pins for user: " + uid);
-      List<Map<String, Object>> allPins = storageHandler.getCollection("all_users", "pins");
+      List<Map<String, Object>> allPins = storageHandler.getCollection("pins");
       List<Map<String, Object>> remainingPins = new ArrayList<>();
 
       for (Map<String, Object> pin : allPins) {

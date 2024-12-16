@@ -40,12 +40,12 @@ public class SavePinsHandler implements Route {
       pinData.put("coordinates", Map.of("lat", lat, "long", lon));
       pinData.put("pinID", pinID);
 
-      this.pinsStorageHandler.addDocument(uid, "pins", pinID, pinData);
+      this.pinsStorageHandler.addDocument( "pins", pinID, pinData);
 
       String allPinsDocID = UUID.randomUUID().toString();
-      this.pinsStorageHandler.addDocument("all_users", "pins", allPinsDocID, pinData);
+      this.pinsStorageHandler.addDocument("pins", allPinsDocID, pinData);
 
-      List<Map<String, Object>> allPins = this.pinsStorageHandler.getCollection("all_users", "pins");
+      List<Map<String, Object>> allPins = this.pinsStorageHandler.getCollection("pins");
 
       if (allPins == null) {
         allPins = new ArrayList<>();

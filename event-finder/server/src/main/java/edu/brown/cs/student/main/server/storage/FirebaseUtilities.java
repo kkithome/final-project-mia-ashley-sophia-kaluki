@@ -25,8 +25,6 @@ public class FirebaseUtilities implements StorageInterface {
     String workingDirectory = System.getProperty("user.dir");
     Path firebaseConfigPath =
         Paths.get(workingDirectory, "src", "main", "resources", "firebase_config.json");
-
-    // TODO: SETUP FIREBASE - COMMENTING OUT FOR NOW
     FileInputStream serviceAccount = new FileInputStream(firebaseConfigPath.toString());
 
     FirebaseOptions options =
@@ -37,16 +35,17 @@ public class FirebaseUtilities implements StorageInterface {
     FirebaseApp.initializeApp(options);
   }
 
+
   @Override
-  public List<Map<String, Object>> getCollection(String uid, String collection_id)
+  public List<Map<String, Object>> getCollection(String collection_id)
       throws InterruptedException, ExecutionException, IllegalArgumentException {
-    if (uid == null || collection_id == null) {
-      throw new IllegalArgumentException("getCollection: uid and/or collection_id cannot be null");
+    if (collection_id == null) {
+      throw new IllegalArgumentException("getCollection: collection_id cannot be null");
     }
 
     Firestore db = FirestoreClient.getFirestore();
     CollectionReference dataRef =
-        db.collection("activities").document(uid).collection(collection_id);
+        db.collection(collection_id);
 
     QuerySnapshot dataQuery = dataRef.get().get();
 
@@ -58,29 +57,23 @@ public class FirebaseUtilities implements StorageInterface {
     return data;
   }
 
-  public DocumentReference getDocumentReference(String uid, String collection_id, String doc_id) throws
+  public DocumentReference getDocumentReference(String collection_id, String doc_id) throws
       ExecutionException, InterruptedException {
     Firestore db = FirestoreClient.getFirestore();
     return db.collection(collection_id).document(doc_id);
   }
 
-  public boolean docExists(String uid, String collection_id, String doc_id) throws ExecutionException,
-      InterruptedException {
-    DocumentReference docRef = getDocumentReference(uid, collection_id, doc_id);
-    return docRef.get().get().exists();
-
-  }
-
   @Override
-  public void addDocument(
-      String uid, String collection_id, String doc_id, Map<String, Object> data)
+  public void addDocument(String collection_id, String doc_id, Map<String, Object> data)
       throws IllegalArgumentException {
-    if (uid == null || collection_id == null || doc_id == null || data == null) {
+    if (collection_id == null || doc_id == null || data == null) {
       throw new IllegalArgumentException(
-          "addDocument: activity_id, collection_id, doc_id, or data cannot be null");
+          "addDocument: collection_id, doc_id, or data cannot be null");
     }
 
     Firestore db = FirestoreClient.getFirestore();
+    CollectionReference collectionRef = db.collection(collection_id);
+    collectionRef.document(doc_id).set(data);
   }
 
   @Override
