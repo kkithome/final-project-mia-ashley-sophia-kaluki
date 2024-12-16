@@ -9,6 +9,7 @@ import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import { activities as fileActivities, Activity } from "../activityData";
 import firebaseConfig2 from '../../resources/firebase2.js'; 
 import { useParams, useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
 
 interface ActivitiesProps {
   activities: Activity[];
@@ -77,16 +78,17 @@ export default function Activities({ activities }: ActivitiesProps) {
   const [activities2, setActivities] = useState<Activity[]>([]); 
   const navigate = useNavigate();
   const [favorites, setFavorites] = useState<string[]>([]);
-  const userId = "user-id-placeholder";
+  const { user } = useUser();
 
   useEffect(() => {
     setActivities(activities);
   }, [activities]);
 
   useEffect(() => {
+    if (!user?.id) return;
     const fetchFavorites = async () => {
       try {
-        const favoritesRef = doc(db, "favorites", userId);
+        const favoritesRef = doc(db, "favorites", user.id);
         const docSnapshot = await getDoc(favoritesRef);
         if (docSnapshot.exists()) {
           setFavorites(docSnapshot.data().activityIds || []);
@@ -96,23 +98,28 @@ export default function Activities({ activities }: ActivitiesProps) {
       }
     };
     fetchFavorites();
-  }, [userId]);
+  }, [user?.id]);
 
   const toggleFavorite = async (activityId: number) => {
+    if (!user?.id) {
+      console.error("User is not logged in");
+      return;
+    }
+
     const activityIdStr = activityId.toString();
     console.log("Toggling favorite for activity:", activityIdStr);
-  
+
     try {
-      const favoritesRef = doc(db, "favorites", userId);
+      const favoritesRef = doc(db, "favorites", user.id);
       const docSnapshot = await getDoc(favoritesRef);
-  
+
       if (!docSnapshot.exists()) {
         console.log("Favorites document does not exist. Creating a new one...");
         await setDoc(favoritesRef, { activityIds: [] });
       }
-  
+
       const isFavorite = favorites.includes(activityIdStr);
-  
+
       if (isFavorite) {
         console.log("Removing from favorites");
         await updateDoc(favoritesRef, {
@@ -130,7 +137,6 @@ export default function Activities({ activities }: ActivitiesProps) {
       console.error("Error updating favorites:", error);
     }
   };
-  
   
   // /**
   //  * Retrieves the activities from the firebase
