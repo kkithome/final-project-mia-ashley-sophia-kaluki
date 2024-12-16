@@ -6,13 +6,14 @@ export interface Activity {
     date: string;
     startTime: string;
     endTime: string; 
-    attendees: string[];
+    attendees?: string[];
     attendance: number; 
-    location: string;
-    category: string; 
-    onCampus: boolean; 
+    location: string | { name: string; latitude?: string; longitude?: string };
+    category?: string; 
+    onCampus?: boolean; 
     longitude: string; 
     latitude: string;
+    time?: string; 
   }
   
   export const activities: Activity[] = [

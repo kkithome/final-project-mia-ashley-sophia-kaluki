@@ -88,8 +88,32 @@ export default function Activities({ activities }: ActivitiesProps) {
   const [checkedStates, setCheckedStates] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
+  if (activities) {
+    console.log("Setting activities2:", activities);
+    setActivities(activities); 
+  } else {
+    console.warn("No activities provided");
+  }
+}, [activities]);
+
+  useEffect(() => {
+    console.log("Activities data:", activities);
     setActivities(activities);
   }, [activities]);
+  
+  useEffect(() => {
+    console.log("Updated activities2:", activities2);
+  }, [activities2]);
+
+  useEffect(() => {
+    console.log("Received activities:", activities);
+  }, [activities]);
+  
+  useEffect(() => {
+    console.log("Updated activities2:", activities2);
+  }, [activities2]);
+  
+  
 
   const toggleCheck = (activityId: number) => {
     setCheckedStates((prevState) => ({
@@ -267,7 +291,7 @@ export default function Activities({ activities }: ActivitiesProps) {
             image: doc.data().image,
             latitude: doc.data().latitude,
             longitude: doc.data().longitude,
-            location: doc.data().location.name,
+            location: typeof doc.data().location === "object" && doc.data().location.name ? doc.data().location.name : "Unknown",
             attendance: doc.data().attendance,
             attendees: doc.data().attendees,
             time: doc.data().time,
@@ -285,82 +309,89 @@ export default function Activities({ activities }: ActivitiesProps) {
 
   return (
     <div className="flex flex-row items-center justify-center flex-wrap gap-8 space-x-5 md:space-x-8">
-      {activities2.map((activity) => (
-        <div
-        key={activity.id}
-        className="border border-customLightBrown bg-customLightBrown rounded-2xl p-4 w-96 min-h-[440px] flex flex-col justify-between gap-4"
-      >
-        <div className="flex flex-col gap-2">
-          <img
-            src={activity.image}
-            alt={activity.title}
-            className="w-full h-40 object-cover rounded-lg"
-          />
-          <h2
-            className="paytone-one text-customRed text-xl text-left cursor-pointer"
-            onClick={() => navigate(`/activity/${activity.id}`)}
-          >
-            {activity.title}
-          </h2>
-        </div>
-      
-        <p className="kadwa text-xs text-left overflow-hidden text-ellipsis">
-          {activity.description}
-        </p>
-      
-        <div className="kadwa flex text-s space-x-1">
-          <div className="flex flex-col space-y-1">
-            <p>{activity.date}</p>
-            <p>{activity.startTime}</p>
-            <div className="flex flex-row space-x-2 max-w-[275px] min-w-[275px]">
-              <img src={RedPin} className="w-4 h-4 object-cover rounded-lg" />
-              <p className="text-xs">
-                <u>{activity.location}</u>
+      {activities2.length === 0 ? (
+        <p className="text-center text-gray-500">No activities found.</p>
+      ) : (
+        activities2.map((activity) => ( 
+          <div
+            key={activity.id}
+            className="border border-customLightBrown bg-customLightBrown rounded-2xl p-4 w-96 min-h-[440px] flex flex-col justify-between gap-4"
+          > 
+            <div className="flex flex-col gap-2">
+              <img
+                src={activity.image}
+                alt={activity.title}
+                className="w-full h-40 object-cover rounded-lg"
+              />
+              <h2
+                className="paytone-one text-customRed text-xl text-left cursor-pointer"
+                onClick={() => navigate(`/activity/${activity.id}`)}
+              >
+                {activity.title}
+              </h2>
+            </div>
+  
+            <p className="kadwa text-xs text-left overflow-hidden text-ellipsis">
+              {activity.description}
+            </p>
+  
+            <div className="kadwa flex text-s space-x-1">
+              <div className="flex flex-col space-y-1">
+                <p>{activity.date}</p>
+                <p>{activity.startTime}</p>
+                <div className="flex flex-row space-x-2 max-w-[275px] min-w-[275px]">
+                  <img src={RedPin} className="w-4 h-4 object-cover rounded-lg" />
+                  <p className="text-xs">
+                  {typeof activity.location === "string" ? (
+                    <u>{activity.location}</u>
+                  ) : typeof activity.location === "object" ? (
+                    <u>{activity.location.name || "Unknown"}</u>
+                  ) : (
+                    "Unknown"
+                  )}
+                  </p>
+                </div>
+              </div>
+              <p className="kadwa text-xs font-bold" style={{ marginLeft: '-3px' }}>
+                {attendanceCounts[activity.id] || 0} Attending
               </p>
             </div>
+  
+            <div className="flex flex-row gap-7 items-center justify-center">
+              <button
+                className="paytone-one text-sm md:text-sm rounded-lg text-customBrown px-2 py-1 mt-1 mb-1 bg-gray-100 hover:bg-brown-700 hover:text-customRed focus:outline-none focus:ring-2 focus:ring-black"
+                onClick={() => createICSFile(activity)}
+              >
+                <div className="flex items-center space-x-2">
+                  <img src={CalendarIcon} className="w-6 h-auto object-cover rounded-lg" />
+                  <span>Add to Calendar</span>
+                </div>
+              </button>
+              <button
+                onClick={async () => {
+                  toggleCheck(activity.id);
+                  await toggleAttendance(activity.id);
+                }}
+                className="focus:outline-none text-customBrown paytone-one text-base rounded-lg px-2 py-1 mt-1 mb-1 text-sm bg-gray-100 hover:bg-brown-700 hover:text-customRed focus:outline-none focus:ring-2 focus:ring-black"
+              >
+                <div className="flex items-center space-x-1">
+                  <img
+                    src={checkedStates[activity.id] ? CheckBox : UnfilledCheckBox}
+                    alt={checkedStates[activity.id] ? 'Checked' : 'Unchecked'}
+                    className="w-6 h-6"
+                  />
+                  <span>Going</span>
+                </div>
+              </button>
+              <button onClick={() => toggleFavorite(activity.id)}>
+                <img
+                  src={favorites.includes(activity.id.toString()) ? FilledHeart : UnfilledHeart}
+                  className="w-8 h-auto"
+                />
+              </button>
+            </div>
           </div>
-          <p className="kadwa text-xs font-bold" style={{ marginLeft: '-3px' }}>
-            {attendanceCounts[activity.id] || 0} Attending
-          </p>
-        </div>
-      
-        <div className="flex flex-row gap-7 items-center justify-center">
-          <button
-            className="paytone-one text-sm md:text-sm rounded-lg text-customBrown px-2 py-1 mt-1 mb-1 bg-gray-100 hover:bg-brown-700 hover:text-customRed focus:outline-none focus:ring-2 focus:ring-black"
-            onClick={() => createICSFile(activity)}
-          >
-            <div className="flex items-center space-x-2">
-              <img src={CalendarIcon} className="w-6 h-auto object-cover rounded-lg" />
-              <span>Add to Calendar</span>
-            </div>
-          </button>
-          <button
-            onClick={async () => {
-              toggleCheck(activity.id);
-              await toggleAttendance(activity.id);
-            }}
-            className="focus:outline-none text-customBrown paytone-one text-base rounded-lg px-2 py-1 mt-1 mb-1 text-sm bg-gray-100 hover:bg-brown-700 hover:text-customRed focus:outline-none focus:ring-2 focus:ring-black"
-          >
-            <div className="flex items-center space-x-1">
-              <img
-                src={checkedStates[activity.id] ? CheckBox : UnfilledCheckBox}
-                alt={checkedStates[activity.id] ? 'Checked' : 'Unchecked'}
-                className="w-6 h-6"
-              />
-              <span>Going</span>
-            </div>
-          </button>
-          <button onClick={() => toggleFavorite(activity.id)}>
-            <img
-              src={favorites.includes(activity.id.toString()) ? FilledHeart : UnfilledHeart}
-              className="w-8 h-auto"
-            />
-          </button>
-        </div>
-      </div>
-      
-      ))}
+        ))
+      )}
     </div>
-  );
-
-}
+  );}

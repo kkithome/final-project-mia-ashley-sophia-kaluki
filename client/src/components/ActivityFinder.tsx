@@ -30,6 +30,10 @@ export default function ActivitiesFinder() {
     }
   }, [location.state]);
 
+  useEffect(() => {
+    console.log("Search results updated: ", searchResults); 
+  }, [searchResults]);
+
   return (
     <div className="space-y-10">
       <div className="flex flex-row item-center justify-center mt-8 lg:mt-12 space-x-5">
