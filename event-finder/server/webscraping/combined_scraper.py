@@ -151,34 +151,33 @@ def scrape_events(source: Source):
     events = []
     
     event_containers = soup.find_all("div", class_="lw_cal_event_list")
-    #or event_list in event_containers:
-    #event_items = soup.find_all("div", class_= "lw_cal_event")
-    for item in event_containers:
-        # remember to change back to event items
-        source = Source.BROWN
-        id = len(events) + 1
-        title = get_event_title(item, source) # done for Brown
-        description_and_date = get_event_description_and_date(item, source)
-        description = description_and_date.description
-        image = get_image(item, source)
-        date = description_and_date.date
-        event_time = get_event_time(item, source)
-        if event_time is not None: 
-            start_time = event_time.start
-            end_time =  event_time.end
-        else:
-            start_time = "No time data available"
-            end_time =  "No time data available"
-        attendance = 0
-        attendees = []
-        location = get_location(item, source)
-        category = "Brown event"
-        onCampus = True
-        event = Event(source, id, title, description, image, date, start_time, 
-                      end_time, attendance,
-                      attendees, location, category, onCampus)
-        
-        events.append(event)
+    for event_list in event_containers:
+        event_items = soup.find_all("div", class_= "lw_cal_event")
+        for item in event_items:
+            source = Source.BROWN
+            id = len(events) + 1
+            title = get_event_title(item, source) # done for Brown
+            description_and_date = get_event_description_and_date(item, source)
+            description = description_and_date.description
+            image = get_image(item, source)
+            date = description_and_date.date
+            event_time = get_event_time(item, source)
+            if event_time is not None: 
+                start_time = event_time.start
+                end_time =  event_time.end
+            else:
+                start_time = "No time data available"
+                end_time =  "No time data available"
+            attendance = 0
+            attendees = []
+            location = get_location(item, source)
+            category = "Brown event"
+            onCampus = True
+            event = Event(source, id, title, description, image, date, start_time, 
+                        end_time, attendance,
+                        attendees, location, category, onCampus)
+            
+            events.append(event)
 
     return events
 
@@ -372,6 +371,7 @@ def save_events_json(events, filename='events.json'):
     with open(filename, 'w') as f:
         json.dump([e.to_json() for e in events], f, indent=2)
 
+scrape_events(Source.BROWN)
 
 def main():
 

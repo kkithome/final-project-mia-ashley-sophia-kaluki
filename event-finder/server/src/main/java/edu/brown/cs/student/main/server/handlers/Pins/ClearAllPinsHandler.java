@@ -30,7 +30,7 @@ public class ClearAllPinsHandler implements Route {
       Firestore db = FirestoreClient.getFirestore();
 
       CollectionReference pinCollection =
-          db.collection("all_users").document("pins").collection("pins");
+          db.collection("pins");
 
       ApiFuture<QuerySnapshot> querySnapshot = pinCollection.get();
 
