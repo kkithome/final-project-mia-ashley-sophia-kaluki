@@ -6,11 +6,14 @@ export interface Activity {
     date: string;
     startTime: string;
     endTime: string; 
-    attendees: string[];
+    attendees?: string[];
     attendance: number; 
-    location: string;
-    category: string; 
-    onCampus: boolean; 
+    location: string | { name: string; latitude?: string; longitude?: string };
+    category?: string; 
+    onCampus?: boolean; 
+    longitude: string; 
+    latitude: string;
+    time?: string; 
   }
   
   export const activities: Activity[] = [
@@ -28,6 +31,8 @@ export interface Activity {
       location: "Pembroke Green",
       category: "Food",
       onCampus: true,
+      longitude: "",
+      latitude: "", 
     },
     {
       id: 2000,
@@ -43,6 +48,8 @@ export interface Activity {
       location: "Ashamu Dance Studio",
       category: "Show",
       onCampus: true,
+      longitude: "",
+      latitude: "", 
     },
     {
       id: 3000,
@@ -58,6 +65,8 @@ export interface Activity {
       location: "Brown University Bookstore",
       category: "Show",
       onCampus: true,
+      longitude: "",
+      latitude: "", 
     },
     {
       id: 4000,
@@ -73,5 +82,7 @@ export interface Activity {
       location: "Metcalf Research Building",
       category: "Show",
       onCampus: true,
+      longitude: "",
+      latitude: "", 
     },
   ];
