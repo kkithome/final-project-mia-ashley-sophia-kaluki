@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import '../output.css';
 import '../styles/App.css';
 import '../styles/index.css';
@@ -75,11 +76,62 @@ const convertTo24Hour = (time: string) => {
 export default function Activities({ activities }: ActivitiesProps) {
   const [activities2, setActivities] = useState<Activity[]>([]); 
   const navigate = useNavigate();
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const userId = "user-id-placeholder";
 
   useEffect(() => {
     setActivities(activities);
   }, [activities]);
 
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      try {
+        const favoritesRef = doc(db, "favorites", userId);
+        const docSnapshot = await getDoc(favoritesRef);
+        if (docSnapshot.exists()) {
+          setFavorites(docSnapshot.data().activityIds || []);
+        }
+      } catch (error) {
+        console.error("Error fetching favorites:", error);
+      }
+    };
+    fetchFavorites();
+  }, [userId]);
+
+  const toggleFavorite = async (activityId: number) => {
+    const activityIdStr = activityId.toString();
+    console.log("Toggling favorite for activity:", activityIdStr);
+  
+    try {
+      const favoritesRef = doc(db, "favorites", userId);
+      const docSnapshot = await getDoc(favoritesRef);
+  
+      if (!docSnapshot.exists()) {
+        console.log("Favorites document does not exist. Creating a new one...");
+        await setDoc(favoritesRef, { activityIds: [] });
+      }
+  
+      const isFavorite = favorites.includes(activityIdStr);
+  
+      if (isFavorite) {
+        console.log("Removing from favorites");
+        await updateDoc(favoritesRef, {
+          activityIds: arrayRemove(activityIdStr),
+        });
+        setFavorites((prev) => prev.filter((id) => id !== activityIdStr));
+      } else {
+        console.log("Adding to favorites");
+        await updateDoc(favoritesRef, {
+          activityIds: arrayUnion(activityIdStr),
+        });
+        setFavorites((prev) => [...prev, activityIdStr]);
+      }
+    } catch (error) {
+      console.error("Error updating favorites:", error);
+    }
+  };
+  
+  
   // /**
   //  * Retrieves the activities from the firebase
   //  */
@@ -213,11 +265,19 @@ export default function Activities({ activities }: ActivitiesProps) {
                 <input type="checkbox" /> Going
               </label>
             </div>
-            <button
+            {/* <button
               className="kadwa rounded-full px-4 py-3 mt-2 mb-2 text-sm border border-black bg-gray-100 hover:bg-brown-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-black"
               onClick={() => alert(`Added ${activity.title} to your calendar!`)}
             >
               Add to Favorites
+            </button> */}
+            <button
+              className={`kadwa rounded-full px-4 py-3 mt-2 mb-2 text-sm border ${
+                favorites.includes(activity.id.toString()) ? "bg-red-500 text-white" : "bg-gray-100"
+              } hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-black`}
+              onClick={() => toggleFavorite(activity.id)}
+            >
+              {favorites.includes(activity.id.toString()) ? "Remove from Favorites" : "Add to Favorites"}
             </button>
           </div>
         </div>
