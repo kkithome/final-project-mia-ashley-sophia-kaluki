@@ -80,72 +80,96 @@ export default function Activities({ activities }: ActivitiesProps) {
     setActivities(activities);
   }, [activities]);
 
-  /**
-   * Retrieves the activities from the firebase
-   */
-  const getActivities = async () => {
-    const collection2 = collection(db, "activities"); 
-    try {
-      const existingActivitiesSnapshot = await getDocs(collection2);
-      console.log(existingActivitiesSnapshot); 
-      const fetchedActivities: Activity[] = existingActivitiesSnapshot.docs.map((doc) => ({
-        id: doc.data().id,
-        title: doc.data().title,
-        description: doc.data().description,
-        date: doc.data().date,
-        startTime: doc.data().startTime,
-        endTime: doc.data().endTime,
-        image: doc.data().image,
-        location: doc.data().location,
-        attendance: doc.data().attendance,
-        attendees: doc.data().attendees,
-        time: doc.data().time,
-        category: doc.data().category,
-        onCampus: doc.data().onCampus,
-      }));
-      setActivities(fetchedActivities); 
-      console.log(fetchedActivities); 
-    }
-    catch (error) {
-      console.error("Error fetching activities:", error);
-    }
-  };
+  // /**
+  //  * Retrieves the activities from the firebase
+  //  */
+  // const getActivities = async () => {
+  //   const collection2 = collection(db, "activities"); 
+  //   try {
+  //     const existingActivitiesSnapshot = await getDocs(collection2);
+  //     console.log(existingActivitiesSnapshot); 
+  //     const fetchedActivities: Activity[] = existingActivitiesSnapshot.docs.map((doc) => ({
+  //       id: doc.data().id,
+  //       title: doc.data().title,
+  //       description: doc.data().description,
+  //       date: doc.data().date,
+  //       startTime: doc.data().startTime,
+  //       endTime: doc.data().endTime,
+  //       image: doc.data().image,
+  //       location: doc.data().location,
+  //       attendance: doc.data().attendance,
+  //       attendees: doc.data().attendees,
+  //       time: doc.data().time,
+  //       category: doc.data().category,
+  //       onCampus: doc.data().onCampus,
+  //     }));
+  //     setActivities(fetchedActivities); 
+  //     console.log(fetchedActivities); 
+  //   }
+  //   catch (error) {
+  //     console.error("Error fetching activities:", error);
+  //   }
+  // };
 
-  /**
-   * This function pushes a list of prepopulated event data to the firebase.
-   * It goes through the list, looks at the event IDs, and only pushes
-   * IDs that are new so there aren't duplicate events.
-   */
-  const pushToFirestore = async () => {
-    const activitiesCollection = collection(db, "activities");
-    try {
-      // Get existing activities in Firestore
-      const existingActivitiesSnapshot = await getDocs(activitiesCollection);
-      const existingActivityIds = new Set(
-        existingActivitiesSnapshot.docs.map((doc) => doc.data().id)
-      );
+  // /**
+  //  * This function pushes a list of prepopulated event data to the firebase.
+  //  * It goes through the list, looks at the event IDs, and only pushes
+  //  * IDs that are new so there aren't duplicate events.
+  //  */
+  // const pushToFirestore = async () => {
+  //   const activitiesCollection = collection(db, "activities");
+  //   try {
+  //     // Get existing activities in Firestore
+  //     const existingActivitiesSnapshot = await getDocs(activitiesCollection);
+  //     const existingActivityIds = new Set(
+  //       existingActivitiesSnapshot.docs.map((doc) => doc.data().id)
+  //     );
 
-      // Push missing activities from the file
-      for (const activity of fileActivities) {
-        if (!existingActivityIds.has(activity.id)) {
-          await addDoc(activitiesCollection, activity);
-          console.log(`Activity with ID ${activity.id} added to Firestore.`);
-        } else {
-          console.log(`Activity with ID ${activity.id} already exists.`);
-        }
-      }
-    } catch (error) {
-      console.error("Error uploading activities:", error);
-    }
-  };
+  //     // Push missing activities from the file
+  //     for (const activity of fileActivities) {
+  //       if (!existingActivityIds.has(activity.id)) {
+  //         await addDoc(activitiesCollection, activity);
+  //         console.log(`Activity with ID ${activity.id} added to Firestore.`);
+  //       } else {
+  //         console.log(`Activity with ID ${activity.id} already exists.`);
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error("Error uploading activities:", error);
+  //   }
+  // };
 
   useEffect(() => {
-    const initializeActivities = async () => {
-      await pushToFirestore();
-      await getActivities();
-    };
-    initializeActivities();
-  }, []);
+    if (activities && activities.length > 0) {
+      setActivities(activities);
+    } else {
+      const fetchActivities = async () => {
+        const collectionRef = collection(db, "activities");
+        try {
+          const existingActivitiesSnapshot = await getDocs(collectionRef);
+          const fetchedActivities: Activity[] = existingActivitiesSnapshot.docs.map((doc) => ({
+            id: doc.data().id,
+            title: doc.data().title,
+            description: doc.data().description,
+            date: doc.data().date,
+            startTime: doc.data().startTime,
+            endTime: doc.data().endTime,
+            image: doc.data().image,
+            location: doc.data().location,
+            attendance: doc.data().attendance,
+            attendees: doc.data().attendees,
+            time: doc.data().time,
+            category: doc.data().category,
+            onCampus: doc.data().onCampus,
+          }));
+          setActivities(fetchedActivities);
+        } catch (error) {
+          console.error("Error fetching activities:", error);
+        }
+      };
+      fetchActivities();
+    }
+  }, [activities]);
 
   return (
     <div className="flex flex-row items-center justify-center flex-wrap gap-8 space-x-5 md:space-x-8">
