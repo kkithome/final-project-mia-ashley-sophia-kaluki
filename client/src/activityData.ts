@@ -15,7 +15,7 @@ export interface Activity {
   
   export const activities: Activity[] = [
     {
-      id: 1,
+      id: 1000,
       title: "Brown Resgiving 2024: Afternoon High Tea Party",
       description:
         "Looking for a delightful way to spend Fall Break? Join us for Brown Resgiving 2024: Afternoon High Tea Party! ...see more",
@@ -30,7 +30,7 @@ export interface Activity {
       onCampus: true,
     },
     {
-      id: 2,
+      id: 2000,
       title: "Fall Dance Concert",
       description:
         "Step into a world where stories unfold through the power of movement. The 2024 Fall Dance Concert features ...see more",
@@ -45,7 +45,7 @@ export interface Activity {
       onCampus: true,
     },
     {
-      id: 3,
+      id: 3000,
       title: "MUSE Foundation 25th Annual Toy Drive",
       description:
         "Brown University is proud to partner with the MUSE Foundation of Rhode Island for the 25th Annual #YESpvd! ...see more",
@@ -60,7 +60,7 @@ export interface Activity {
       onCampus: true,
     },
     {
-      id: 4,
+      id: 4000,
       title: "Movie Screening: The Crazies (1973)",
       description:
         "It’s time for our second screening of the month, and this one’s a classic you won’t want to miss. ...see more",

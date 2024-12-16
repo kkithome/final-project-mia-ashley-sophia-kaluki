@@ -1,21 +1,110 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Mapbox from "./Mapbox";
 import Activities from "./Activities";
 import "../styles/App.css";
 import "../styles/index.css";
 import "../output.css";
 import Bear4 from "../assets/Bear4.png";
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
 import { UserButton } from "@clerk/clerk-react";
+import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
+import firebaseConfig2 from "../../resources/firebase2.js"; 
 import { useParams, useNavigate } from "react-router-dom";
 import { Activity, activities } from "../activityData";
 
-export default function ActivityPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
+interface ActivitiesProps {
+  activities: Activity[];
+}
 
-  const activity = activities.find(
-    (activity) => activity.id === parseInt(id || "", 10)
-  );
+let app;
+if (!app) {
+  console.log("Database initialized");
+  app = initializeApp(firebaseConfig2, "activities");
+} else {
+  app = getApp();
+  console.log("App already created");
+}
+const db = getFirestore(app);
+
+export { db };
+
+/**
+ * This method creates a .ics file download so the user can
+ * add the event to their calendar.
+ */
+const createICSFile = (activity: Activity) => {
+  const startDateTime = new Date(
+    `${activity.date}T${convertTo24Hour(activity.startTime)}`
+  ).toISOString();
+  const endDateTime = new Date(
+    new Date(startDateTime).getTime() + 60 * 60 * 1000
+  ).toISOString();
+
+  const icsContent = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "BEGIN:VEVENT",
+    `SUMMARY:${activity.title}`,
+    `DESCRIPTION:${activity.description}`,
+    `LOCATION:${activity.location}`,
+    `DTSTART:${startDateTime.replace(/[-:]/g, "").split(".")[0]}Z`,
+    `DTEND:${endDateTime.replace(/[-:]/g, "").split(".")[0]}Z`,
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+
+  const blob = new Blob([icsContent], { type: "text/calendar" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${activity.title}.ics`;
+  link.click();
+
+  URL.revokeObjectURL(url);
+};
+
+/**
+ * This method converts the time string to a more readable format.
+ */
+const convertTo24Hour = (time: string) => {
+  const [hourMin, period] = time.split(" ");
+  let [hour, minutes] = hourMin.split(":").map(Number);
+
+  if (period === "PM" && hour !== 12) hour += 12;
+  if (period === "AM" && hour === 12) hour = 0;
+
+  return `${hour.toString().padStart(2, "0")}:${minutes
+    .toString()
+    .padStart(2, "0")}:00`;
+};
+
+export default function ActivityPage() {
+  const { title } = useParams();
+  const navigate = useNavigate();
+  const [activity, setActivity] = useState<Activity | null>(null);
+
+  useEffect(() => {
+    const fetchActivity = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "activities"));
+        const activityData = querySnapshot.docs
+          .map((doc) => ({ title: doc.data().title }))
+          .find((item) => item.title === title) as Activity | undefined;
+
+        if (activityData) {
+          setActivity(activityData);
+          // debugging
+          console.log("printing activity:" + activityData)
+        }
+      } catch (error) {
+        console.error("Error fetching activity:", error);
+      } 
+    };
+
+    fetchActivity();
+  }, [title]);
 
   if (!activity) {
     return (
@@ -31,57 +120,6 @@ export default function ActivityPage() {
     );
   }
 
-  /**
-   * This method creates a .ics file download so the user can
-   * add the event to their calendar.
-   */
-  const createICSFile = (activity: Activity) => {
-    const startDateTime = new Date(
-      `${activity.date}T${convertTo24Hour(activity.startTime)}`
-    ).toISOString();
-    const endDateTime = new Date(
-      new Date(startDateTime).getTime() + 60 * 60 * 1000
-    ).toISOString();
-
-    const icsContent = [
-      "BEGIN:VCALENDAR",
-      "VERSION:2.0",
-      "BEGIN:VEVENT",
-      `SUMMARY:${activity.title}`,
-      `DESCRIPTION:${activity.description}`,
-      `LOCATION:${activity.location}`,
-      `DTSTART:${startDateTime.replace(/[-:]/g, "").split(".")[0]}Z`,
-      `DTEND:${endDateTime.replace(/[-:]/g, "").split(".")[0]}Z`,
-      "END:VEVENT",
-      "END:VCALENDAR",
-    ].join("\r\n");
-
-    const blob = new Blob([icsContent], { type: "text/calendar" });
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${activity.title}.ics`;
-    link.click();
-
-    URL.revokeObjectURL(url);
-  };
-
-  /**
-   * This method converts the time string to a more readable format.
-   */
-  const convertTo24Hour = (time: string) => {
-    const [hourMin, period] = time.split(" ");
-    let [hour, minutes] = hourMin.split(":").map(Number);
-
-    if (period === "PM" && hour !== 12) hour += 12;
-    if (period === "AM" && hour === 12) hour = 0;
-
-    return `${hour.toString().padStart(2, "0")}:${minutes
-      .toString()
-      .padStart(2, "0")}:00`;
-  };
-
   return (
     <div className="min-h-screen bg-customBrown text-white p-6">
       <div className="flex justify-start">
@@ -93,7 +131,7 @@ export default function ActivityPage() {
         </button>
       </div>
       <div
-        key={activity.id}
+        key={activity.title}
         className="border border-customLightBrown bg-customLightBrown rounded-2xl p-4 w-auto h-auto text-center space-y-2"
       >
         <div className="flex flex-row items-start mt-6 gap-6">

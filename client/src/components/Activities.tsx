@@ -226,6 +226,7 @@ export default function Activities({ activities }: ActivitiesProps) {
         }
       };
       fetchActivities();
+      console.log(activities)
     }
   }, [activities]);
 

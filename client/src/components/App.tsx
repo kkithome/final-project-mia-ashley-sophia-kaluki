@@ -91,7 +91,7 @@ function App() {
                   <Route path="/" element={<ActivityFinder />} />
                   <Route path="/activity-finder" element={<ActivityFinder />} />
                   <Route path="/user-profile" element={<UserP />} />
-                  <Route path="/activity/:id" element={<ActivityPage />} />
+                  <Route path="/activity/:title" element={<ActivityPage />} />
                   <Route path="/searcher" element={<Searcher />} />
                   <Route path="/home" element={<Home />} />
                 </Routes>
