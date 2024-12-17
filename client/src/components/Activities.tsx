@@ -359,8 +359,8 @@ export default function Activities({ activities }: ActivitiesProps) {
         currentItems.map((activity) => (
           <div
             key={activity.id}
-            className="border border-customLightBrown bg-customLightBrown rounded-2xl p-4 w-96 min-h-[440px] flex flex-col justify-between gap-4"
-          >
+            className="border border-customLightBrown bg-customLightBrown rounded-2xl p-4 w-96 min-h-[440px] max-h-[440px] flex flex-col justify-between gap-4"
+          > 
             <div className="flex flex-col gap-2">
               <img
                 src={activity.image}

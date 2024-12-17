@@ -99,7 +99,7 @@ export default function Searcher() {
     };
 
     return (
-        <div className="min-h-screen bg-[#5C4033] p-8">
+        <div className="min-h-screen bg-customBrown p-8">
             {/* Inject CSS */}
             <style>{styles}</style>
 
@@ -107,7 +107,7 @@ export default function Searcher() {
             {/* Back Button... needs work? */}
             <button 
                 onClick={handleBack}
-                className="bg-red-700 text-white px-4 py-2 rounded-sm flex items-center mb-8 paytone"
+                className="bg-customRed text-white px-4 py-2 rounded-lg flex items-center mb-8 paytone-one space-x-2"
             >
                 <div className="back-arrow">
                 </div>
@@ -115,12 +115,12 @@ export default function Searcher() {
                 <span>Back to main</span>
             </button>
 
-            <div className="bg-[#E5DDD5] rounded-3xl p-12 max-w-4xl mx-auto">
+            <div className="bg-customLightBrown rounded-3xl p-12 max-w-4xl mx-auto">
                 <form onSubmit={handleSubmit}>
                     {/* Keyword + categorization */}
                     <div className="flex gap-8 mb-8">
                         <div className="flex-1">
-                            <label className="block text-red-700 mb-2 kadwa text-custom">Keyword</label>
+                            <label className="block text-customRed mb-2 kadwa text-custom">Keyword</label>
                             <input
                                 type="text"
                                 name="keyword"
@@ -131,7 +131,7 @@ export default function Searcher() {
                             />
                         </div>
                         <div className="flex-1">
-                            <label className="block text-red-700 mb-2 kadwa text-custom">Event Category</label>
+                            <label className="block text-customRed mb-2 kadwa text-custom">Event Category</label>
                             <select 
                                 name="eventCategory"
                                 value={formData.eventCategory}
@@ -157,7 +157,7 @@ export default function Searcher() {
                     {/* Time, Location, and On-Campus */}
                     <div className="flex gap-8 mb-8 items-start">
                         <div className="w-1/4">
-                            <label className="block text-red-700 mb-2 kadwa text-custom">Time</label>
+                            <label className="block text-customRed mb-2 kadwa text-custom">Time</label>
                             <select
                                 name="time"
                                 value={formData.time}
@@ -171,7 +171,7 @@ export default function Searcher() {
                             </select>
                         </div>
                         <div className="flex-1">
-                            <label className="block text-red-700 mb-2 kadwa text-custom">Location</label>
+                            <label className="block text-customRed mb-2 kadwa text-custom">Location</label>
                             <input
                                 type="text"
                                 name="location"
@@ -182,7 +182,7 @@ export default function Searcher() {
                             />
                         </div>
                         <div className="flex items-center pt-8 gap-3">
-                            <span className="text-red-700 kadwa text-custom">On-Campus</span>
+                            <span className="text-customRed kadwa text-custom">On-Campus</span>
                             <div className="relative">
                                 <input 
                                     type="checkbox"
@@ -199,7 +199,7 @@ export default function Searcher() {
 
                     {/*Date */}
                     <div className="mb-12">
-                        <label className="block text-red-700 mb-2 kadwa text-custom">Date</label>
+                        <label className="block text-customRed mb-2 kadwa text-custom">Date</label>
                         <input
                             type="date"
                             name="date"
@@ -213,7 +213,7 @@ export default function Searcher() {
                     <div className="flex justify-center">
                         <button 
                             type="submit"
-                            className="bg-red-700 text-white px-12 py-4 rounded-lg paytone text-submit hover:bg-red-800 transition uppercase"
+                            className="bg-customRed text-white px-6 py-4 rounded-lg paytone text-lg text-submit hover:bg-red-800 transition uppercase"
                             // formMethod= "get"
                             // formAction= "/activities"
                         >
