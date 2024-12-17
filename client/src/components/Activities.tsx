@@ -102,15 +102,11 @@ const createICSFile = (activity: Activity) => {
   let dtend = "";
   let rrule = "";
 
-  // Handle different date formats
   if (activity.date.toLowerCase().includes("every")) {
-    // Recurring event
     rrule = "FREQ=DAILY";
   } else if (activity.date.toLowerCase().includes("-")) {
-    // Range of days (e.g., "Tuesday-Sunday")
     rrule = "FREQ=WEEKLY;BYDAY=" + activity.date.split("-").map((day) => day.trim().toUpperCase().slice(0, 2)).join(",");
   } else {
-    // Specific date
     try {
       const dateObj = new Date(activity.date);
       if (!isNaN(dateObj.getTime())) {
@@ -121,11 +117,9 @@ const createICSFile = (activity: Activity) => {
     }
   }
 
-  // Convert time to 24-hour format
   const startTime = convertTo24Hour(activity.startTime);
   const endTime = convertTo24Hour(activity.endTime);
 
-  // Set DTSTART and DTEND if specific date is valid
   if (dtstart) {
     dtstart += `T${startTime.replace(/:/g, "")}Z`;
     dtend = dtstart.replace(startTime.replace(/:/g, ""), endTime.replace(/:/g, ""));
@@ -173,6 +167,8 @@ const convertTo24Hour = (time: string) => {
   if (period === "AM" && hour === 12) hour = 0;
 
   return `${hour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
+};
+
 
 export default function Activities({ activities }: ActivitiesProps) {
   const [activities2, setActivities] = useState<Activity[]>([]);
