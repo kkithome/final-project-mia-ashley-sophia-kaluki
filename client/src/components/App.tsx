@@ -64,7 +64,7 @@ function App() {
                   className="w-16 md:w-24 lg:w-32 h-auto object-contain"
                 />
                 <p
-                    className="limelight text-2xl md:text-5xl lg:text-7xl text-white"
+                    className="limelight text-2xl md:text-5xl xl:text-7xl text-white"
                     aria-label="Page Title"
                   >
                     Bear Tracks

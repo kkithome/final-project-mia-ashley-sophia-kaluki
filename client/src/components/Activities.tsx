@@ -16,6 +16,8 @@ import FilledHeart from "../assets/FilledHeart.png";
 import CheckBox from "../assets/CheckBox.png"; 
 import UnfilledCheckBox from "../assets/UnfilledCheckBox.png"; 
 import RedPin from "../assets/RedPin.png"; 
+import ForwardArrow from "../assets/ForwardArrow.png"; 
+import BackArrow from "../assets/BackArrow.png"; 
 
 interface ActivitiesProps {
   activities: Activity[];
@@ -86,6 +88,11 @@ export default function Activities({ activities }: ActivitiesProps) {
   const [favorites, setFavorites] = useState<string[]>([]);
   const { user } = useUser();
   const [checkedStates, setCheckedStates] = useState<Record<number, boolean>>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 9;
+
+  const totalPages = Math.ceil(activities2.length / itemsPerPage);
+  const currentItems = activities2.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   useEffect(() => {
   if (activities) {
@@ -113,7 +120,17 @@ export default function Activities({ activities }: ActivitiesProps) {
     console.log("Updated activities2:", activities2);
   }, [activities2]);
   
-  
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prev) => prev - 1);
+    }
+  };
 
   const toggleCheck = (activityId: number) => {
     setCheckedStates((prevState) => ({
@@ -308,11 +325,11 @@ export default function Activities({ activities }: ActivitiesProps) {
   }, [activities]);
 
   return (
-    <div className="flex flex-row items-center justify-center flex-wrap gap-8 space-x-5 md:space-x-8">
-      {activities2.length === 0 ? (
+    <div className="flex flex-row items-center justify-center flex-wrap gap-8">
+      {currentItems.length === 0 ? (
         <p className="text-center text-gray-500">No activities found.</p>
       ) : (
-        activities2.map((activity) => ( 
+        currentItems.map((activity) => ( 
           <div
             key={activity.id}
             className="border border-customLightBrown bg-customLightBrown rounded-2xl p-4 w-96 min-h-[440px] flex flex-col justify-between gap-4"
@@ -393,5 +410,21 @@ export default function Activities({ activities }: ActivitiesProps) {
           </div>
         ))
       )}
-    </div>
-  );}
+      <div className="flex items-center justify-end w-full mt-4 pr-20 mr-16">
+      <button
+        onClick={handlePreviousPage}
+        disabled={currentPage === 1}
+        className={`p-2 rounded-lg ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""}`}
+      >
+        <img src={BackArrow} alt="Previous" className="w-12 h-12" />
+      </button>
+      <button
+        onClick={handleNextPage}
+        disabled={currentPage === totalPages}
+        className={`p-2 rounded-lg ${currentPage === totalPages ? "opacity-50 cursor-not-allowed" : ""}`}
+      >
+        <img src={ForwardArrow} alt="Next" className="w-12 h-12" />
+      </button>
+      </div>
+  </div>
+);}
