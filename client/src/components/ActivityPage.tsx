@@ -311,7 +311,7 @@ export default function ActivityPage() {
             </p>
             <div className="kadwa text-lg space-y-4 text-black">
               <p>
-                <strong>Date and Time:</strong> {activity.date}
+                <strong>Date:</strong> {activity.date}
               </p>
               <p>
                 <strong>Time:</strong> {activity.startTime}
