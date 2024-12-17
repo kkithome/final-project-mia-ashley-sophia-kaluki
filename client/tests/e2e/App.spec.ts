@@ -317,3 +317,121 @@ test("drag and drop", async ({ page }) => {
   await source_element.dragTo(target_element);
 })
 
+test('check everything is appearing properly on the activity finder page', async ({ page }) => {
+  await page.goto('http://localhost:8000/');
+  await page.locator('html').click();
+  await page.getByRole('button', { name: 'LOG IN' }).click();
+  await page.locator('div').nth(1).click();
+  await page.goto('https://smart-terrier-31.accounts.dev/sign-in?redirect_url=http%3A%2F%2Flocalhost%3A8000%2F');
+  await page.getByPlaceholder('Enter your email address').click();
+  await page.getByPlaceholder('Enter your email address').fill('student_one@brown.edu');
+  await page.getByPlaceholder('Enter your email address').press('Enter');
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  await page.getByPlaceholder('Enter your password').fill('studentone123');
+  await page.getByPlaceholder('Enter your password').press('Enter');
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.goto('http://localhost:8000/');
+  await expect(page.getByText('Bear Tracks')).toBeVisible();
+  await expect(page.locator('div').filter({ hasText: /^Bear Tracks$/ }).getByRole('img')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Search... Search Icon' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'User Profile' })).toBeVisible();
+  await expect(page.getByLabel('Open user button')).toBeVisible();
+  await expect(page.locator('div').filter({ hasText: /^LOG OUT$/ }).nth(1)).toBeVisible();
+  await expect(page.getByText('Search...User ProfileBrown')).toBeVisible();
+  await expect(page.getByRole('img', { name: 'Brown Bee Coffee' })).toBeVisible();
+  await expect(page.getByText('Brown Bee CoffeeA rare gem')).toBeVisible();
+  await expect(page.getByText('A rare gem nestled in the')).toBeVisible();
+  await expect(page.locator('div:nth-child(4)').first()).toBeVisible();
+  await expect(page.locator('button:nth-child(3)').first()).toBeVisible();
+  await expect(page.locator('div').filter({ hasText: /^404 Benefit St, Providence, RI 02903$/ })).toBeVisible();
+  await expect(page.getByText(':00am - 3:00pm')).toBeVisible();
+  await expect(page.getByText('Open Thursday-Monday')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Page Title' })).toBeVisible();
+  await expect(page.locator('div').filter({ hasText: /^Map© Mapbox © OpenStreetMap Improve this mapClear My Pins$/ }).getByRole('img')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Next' })).toBeVisible();
+  await expect(page.getByLabel('Map', { exact: true })).toBeVisible();
+  await expect(page.getByText('© 2024 Mia Nguyen, Kaluki')).toBeVisible();
+});
+
+test('keyword search for "bee" shows one event', async ({ page }) => {
+  await page.goto('http://localhost:8000/');
+  await page.locator('div').filter({ hasText: /^LOG IN$/ }).click();
+  await page.getByPlaceholder('Enter your email address').click();
+  await page.getByPlaceholder('Enter your email address').fill('student_one@brown.edu');
+  await page.getByPlaceholder('Enter your email address').press('Enter');
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  await page.getByPlaceholder('Enter your password').click();
+  await page.getByPlaceholder('Enter your password').fill('studentone123');
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('link', { name: 'Search... Search Icon' }).click();
+  await page.getByPlaceholder('Enter keyword').click();
+  await page.getByPlaceholder('Enter keyword').fill('bee');
+  await page.getByRole('button', { name: 'Submit Search' }).click();
+  await page.getByRole('heading', { name: 'Brown Bee Coffee' }).click();
+  await expect(page.getByRole('heading', { name: 'Brown Bee Coffee' })).toBeVisible();
+  await expect(page.getByRole('img', { name: 'Brown Bee Coffee' })).toBeVisible();
+  await page.getByRole('button', { name: 'Back to main' }).click();
+  await expect(page.getByText('Brown Bee CoffeeA rare gem')).toBeVisible();
+});
+
+test('filter events by category i.e. food to see 2 events', async ({ page }) => {
+  await page.goto('http://localhost:8000/');
+  await page.getByRole('button', { name: 'LOG IN' }).click();
+  await page.getByPlaceholder('Enter your email address').click();
+  await page.getByPlaceholder('Enter your email address').fill('student_one@brown.edu');
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  await page.getByPlaceholder('Enter your password').fill('studentone123');
+  await page.getByPlaceholder('Enter your password').press('Enter');
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await expect(page.getByText('Brown Bee CoffeeA rare gem')).toBeVisible();
+  await expect(page.getByText('India Point ParkIndia Point')).toBeVisible();
+  await expect(page.getByText('Providence AthenaeumThe')).toBeVisible();
+  await page.getByRole('link', { name: 'Search... Search Icon' }).click();
+  await page.locator('select[name="eventCategory"]').selectOption('food-and-drink');
+  await page.getByRole('button', { name: 'Submit Search' }).click();
+  await expect(page.getByText('View Rhode Island Brew Fest | 2025Going fastnull - nullProvidence, RI0')).toBeVisible();
+  await expect(page.getByText('View RI VegFestThe WaterFire')).toBeVisible();
+});
+
+test('clicking going increases attendance by 1', async ({ page }) => {
+  await page.goto('http://localhost:8000/');
+  await page.getByRole('button', { name: 'LOG IN' }).click();
+  await page.getByPlaceholder('Enter your email address').click();
+  await page.getByPlaceholder('Enter your email address').fill('student_one@brown.edu');
+  await page.getByPlaceholder('Enter your email address').press('Enter');
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  await page.getByPlaceholder('Enter your password').fill('studentone123');
+  await page.getByText('PasswordForgot password?Continue').click();
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await expect(page.locator('.kadwa > .kadwa').first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Brown Bee Coffee' })).toBeVisible();
+  await expect(page.locator('div:nth-child(4) > button:nth-child(2)').first()).toBeVisible();
+  await page.locator('.kadwa > .kadwa').first().click();
+  await page.locator('div:nth-child(4) > button:nth-child(2)').first().click();
+  await page.getByRole('heading', { name: 'Brown Bee Coffee' }).click();
+  await page.getByRole('button', { name: 'Back to main' }).click();
+  await expect(page.getByText('1 Attending')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Checked Going', exact: true })).toBeVisible();
+});
+
+test('favoriting event adds it to the user profile favorited events list', async ({ page }) => {
+  await page.goto('http://localhost:8000/');
+  await page.getByRole('button', { name: 'LOG IN' }).click();
+  await page.getByPlaceholder('Enter your email address').click();
+  await page.getByPlaceholder('Enter your email address').fill('student_one@brown.edu');
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  await page.getByPlaceholder('Enter your password').fill('studentone123');
+  await page.getByPlaceholder('Enter your password').press('Enter');
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await expect(page.locator('div:nth-child(3) > div:nth-child(4) > button:nth-child(3)')).toBeVisible();
+  await expect(page.getByText('Providence AthenaeumThe')).toBeVisible();
+  await page.getByRole('button', { name: 'User Profile' }).click();
+  await expect(page.getByText('Favorited EventsIndia Point')).toBeVisible();
+  await expect(page.locator('ul').filter({ hasText: /^India Point Park$/ }).getByRole('listitem')).toBeVisible();
+  await page.getByRole('button', { name: 'Back to Main' }).click();
+  await page.locator('div:nth-child(3) > div:nth-child(4) > button:nth-child(3)').click();
+  await expect(page.locator('div:nth-child(3) > div:nth-child(4) > button:nth-child(3)')).toBeVisible();
+  await page.getByRole('button', { name: 'User Profile' }).click();
+  await expect(page.getByText('Favorited EventsIndia Point')).toBeVisible();
+  await expect(page.getByText('Providence Athenaeum').first()).toBeVisible();
+});

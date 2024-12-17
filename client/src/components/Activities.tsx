@@ -39,11 +39,90 @@ export {db};
  * This method creates a .ics file download so the user can 
  * add the event to their calendar.
  */
+// const createICSFile = (activity: Activity) => {
+//   // const startDateTime = new Date(`${activity.date}T${convertTo24Hour(activity.startTime)}`).toISOString();
+//   // const endDateTime = new Date(
+//   //   new Date(startDateTime).getTime() + 60 * 60 * 1000
+//   // ).toISOString();
+
+//   const icsContent = [
+//     "BEGIN:VCALENDAR",
+//     "VERSION:2.0",
+//     "BEGIN:VEVENT",
+//     `SUMMARY:${activity.title}`,
+//     `DESCRIPTION:${activity.description}`,
+//     `LOCATION:${typeof activity.location === "string" ? (
+//                     <u>{activity.location}</u>
+//                   ) : typeof activity.location === "object" ? (
+//                     <u>{activity.location.name || "Unknown"}</u>
+//                   ) : (
+//                     "Unknown"
+//                   )}`,
+//     // `DTSTART:${startDateTime.replace(/[-:]/g, "").split(".")[0]}Z`,
+//     `DTSTART:${activity.startTime}`,
+//     // `DTEND:${endDateTime.replace(/[-:]/g, "").split(".")[0]}Z`,
+//     `DTEND:${activity.endTime}`,
+//     "END:VEVENT",
+//     "END:VCALENDAR",
+//   ].join("\r\n");
+
+//   const blob = new Blob([icsContent], { type: "text/calendar" });
+//   const url = URL.createObjectURL(blob);
+
+//   const link = document.createElement("a");
+//   link.href = url;
+//   link.download = `${activity.title}.ics`;
+//   link.click();
+
+//   URL.revokeObjectURL(url);
+// };
+
+// /**
+//  * This method converts the time string to a more readable format.
+//  */
+// const convertTo24Hour = (time: string) => {
+//   const [hourMin, period] = time.split(" ");
+//   let [hour, minutes] = hourMin.split(":").map(Number);
+
+//   if (period === "PM" && hour !== 12) hour += 12;
+//   if (period === "AM" && hour === 12) hour = 0;
+
+//   return `${hour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:00`;
+// };
+
 const createICSFile = (activity: Activity) => {
-  const startDateTime = new Date(`${activity.date}T${convertTo24Hour(activity.startTime)}`).toISOString();
-  const endDateTime = new Date(
-    new Date(startDateTime).getTime() + 60 * 60 * 1000
-  ).toISOString();
+  let dtstart = "";
+  let dtend = "";
+  let rrule = "";
+
+  // Handle different date formats
+  if (activity.date.toLowerCase().includes("every")) {
+    // Recurring event
+    rrule = "FREQ=DAILY";
+  } else if (activity.date.toLowerCase().includes("-")) {
+    // Range of days (e.g., "Tuesday-Sunday")
+    rrule = "FREQ=WEEKLY;BYDAY=" + activity.date.split("-").map((day) => day.trim().toUpperCase().slice(0, 2)).join(",");
+  } else {
+    // Specific date
+    try {
+      const dateObj = new Date(activity.date);
+      if (!isNaN(dateObj.getTime())) {
+        dtstart = dateObj.toISOString().split("T")[0].replace(/-/g, "");
+      }
+    } catch {
+      console.error("Invalid date format:", activity.date);
+    }
+  }
+
+  // Convert time to 24-hour format
+  const startTime = convertTo24Hour(activity.startTime);
+  const endTime = convertTo24Hour(activity.endTime);
+
+  // Set DTSTART and DTEND if specific date is valid
+  if (dtstart) {
+    dtstart += `T${startTime.replace(/:/g, "")}Z`;
+    dtend = dtstart.replace(startTime.replace(/:/g, ""), endTime.replace(/:/g, ""));
+  }
 
   const icsContent = [
     "BEGIN:VCALENDAR",
@@ -51,12 +130,19 @@ const createICSFile = (activity: Activity) => {
     "BEGIN:VEVENT",
     `SUMMARY:${activity.title}`,
     `DESCRIPTION:${activity.description}`,
-    `LOCATION:${activity.location}`,
-    `DTSTART:${startDateTime.replace(/[-:]/g, "").split(".")[0]}Z`,
-    `DTEND:${endDateTime.replace(/[-:]/g, "").split(".")[0]}Z`,
+    `LOCATION:${
+      typeof activity.location === "string"
+        ? activity.location
+        : activity.location?.name || "Unknown"
+    }`,
+    rrule ? `RRULE:${rrule}` : "",
+    dtstart ? `DTSTART:${dtstart}` : "",
+    dtend ? `DTEND:${dtend}` : "",
     "END:VEVENT",
     "END:VCALENDAR",
-  ].join("\r\n");
+  ]
+    .filter(Boolean) // Remove empty lines
+    .join("\r\n");
 
   const blob = new Blob([icsContent], { type: "text/calendar" });
   const url = URL.createObjectURL(blob);
@@ -70,7 +156,7 @@ const createICSFile = (activity: Activity) => {
 };
 
 /**
- * This method converts the time string to a more readable format.
+ * Converts time string to 24-hour format.
  */
 const convertTo24Hour = (time: string) => {
   const [hourMin, period] = time.split(" ");
@@ -79,7 +165,7 @@ const convertTo24Hour = (time: string) => {
   if (period === "PM" && hour !== 12) hour += 12;
   if (period === "AM" && hour === 12) hour = 0;
 
-  return `${hour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:00`;
+  return `${hour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
 };
 
 export default function Activities({ activities }: ActivitiesProps) {
@@ -303,8 +389,8 @@ export default function Activities({ activities }: ActivitiesProps) {
             title: doc.data().title,
             description: doc.data().description,
             date: doc.data().date,
-            startTime: doc.data().startTime,
-            endTime: doc.data().endTime,
+            startTime: doc.data().start_time,
+            endTime: doc.data().end_time,
             image: doc.data().image,
             latitude: doc.data().latitude,
             longitude: doc.data().longitude,
@@ -355,7 +441,7 @@ export default function Activities({ activities }: ActivitiesProps) {
             <div className="kadwa flex text-s space-x-1">
               <div className="flex flex-col space-y-1">
                 <p>{activity.date}</p>
-                <p>{activity.startTime}</p>
+                <p>{`${activity.startTime} - ${activity.endTime}`}</p>
                 <div className="flex flex-row space-x-2 max-w-[275px] min-w-[275px]">
                   <img src={RedPin} className="w-4 h-4 object-cover rounded-lg" />
                   <p className="text-xs">
