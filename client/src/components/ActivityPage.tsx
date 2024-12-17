@@ -81,7 +81,7 @@ const convertTo24Hour = (time: string) => {
 };
 
 export default function ActivityPage() {
-  const { title } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
   const [activity, setActivity] = useState<Activity | null>(null);
 
@@ -90,13 +90,13 @@ export default function ActivityPage() {
       try {
         const querySnapshot = await getDocs(collection(db, "activities"));
         const activityData = querySnapshot.docs
-          .map((doc) => ({ title: doc.data().title }))
-          .find((item) => item.title === title) as Activity | undefined;
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .find((item) => item.id === id) as Activity | undefined;
 
         if (activityData) {
           setActivity(activityData);
           // debugging
-          console.log("printing activity:" + activityData)
+          console.log("printing activity" + activityData)
         }
       } catch (error) {
         console.error("Error fetching activity:", error);
@@ -104,7 +104,7 @@ export default function ActivityPage() {
     };
 
     fetchActivity();
-  }, [title]);
+  }, [id]);
 
   if (!activity) {
     return (
@@ -131,7 +131,7 @@ export default function ActivityPage() {
         </button>
       </div>
       <div
-        key={activity.title}
+        key={activity.id}
         className="border border-customLightBrown bg-customLightBrown rounded-2xl p-4 w-auto h-auto text-center space-y-2"
       >
         <div className="flex flex-row items-start mt-6 gap-6">
@@ -144,7 +144,9 @@ export default function ActivityPage() {
             <h1 className="paytone-one text-4xl mb-4 text-customRed">
               {activity.title}
             </h1>
-            <p className="kadwa text-lg mb-6 text-black">{activity.description}</p>
+            <p className="kadwa text-lg mb-6 text-black">
+              {activity.description}
+            </p>
             <div className="kadwa text-lg space-y-4 text-black">
               <p>
                 <strong>Date:</strong> {activity.date}
@@ -153,10 +155,13 @@ export default function ActivityPage() {
                 <strong>Time:</strong> {activity.startTime}
               </p>
               <p>
-                <strong>Location:</strong> {activity.location}
+                <strong>Location:</strong>{" "}
+                {typeof activity.location === "string"
+                  ? activity.location
+                  : activity.location.name}
               </p>
               <p>
-                <strong>Attendees:</strong> {activity.attendees.length}
+                <strong>Attendees:</strong> {activity.attendees?.length || 0}
               </p>
             </div>
             <div className="flex flex-row space-x-4 mt-6">
