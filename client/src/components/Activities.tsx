@@ -169,6 +169,7 @@ const convertTo24Hour = (time: string) => {
   return `${hour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
 };
 
+
 export default function Activities({ activities }: ActivitiesProps) {
   const [activities2, setActivities] = useState<Activity[]>([]);
   const navigate = useNavigate();
