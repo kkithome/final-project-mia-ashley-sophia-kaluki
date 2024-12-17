@@ -38,7 +38,6 @@ public class Server {
       Spark.get("/save-pins", new SavePinsHandler(firebaseUtils));
       Spark.get("/clear-all", new ClearAllPinsHandler(firebaseUtils));
 
-
       Spark.get("/clear-user", new ClearUserHandler(firebaseUtils));
       Spark.notFound(
           (request, response) -> {

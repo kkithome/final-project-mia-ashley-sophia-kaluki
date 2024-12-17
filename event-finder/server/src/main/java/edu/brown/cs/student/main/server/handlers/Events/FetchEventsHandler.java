@@ -19,7 +19,7 @@ public class FetchEventsHandler implements Route {
 
   @Override
   public Object handle(Request request, Response response) throws Exception {
-    Map<String,Object> responseMap = new HashMap<>();
+    Map<String, Object> responseMap = new HashMap<>();
     try {
       System.out.println("Listing all events");
       List<Map<String, Object>> vals = this.eventStorageHandler.getCollection("activities");
@@ -47,7 +47,6 @@ public class FetchEventsHandler implements Route {
         eventData.put("attendees", event.get("attendees"));
         eventData.put("category", event.get("category"));
         eventData.put("onCampus", event.get("onCampus"));
-
 
         Map<String, Object> location = (Map<String, Object>) event.get("location");
         if (location != null) {

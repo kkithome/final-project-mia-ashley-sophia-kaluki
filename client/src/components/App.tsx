@@ -36,10 +36,11 @@ const firebaseConfig = {
 
 // Initialize Firebase with the provided configuration
 let app;
-if (getApps().length === 0) {
+if (!app) {
   app = initializeApp(firebaseConfig);
 } else {
   app = getApp();
+  console.log("App already created");
 }
 
 const db = getFirestore(app);
@@ -53,15 +54,15 @@ function App() {
       <div className="bg-customBrown min-h-screen flex flex-col">
         <main className="flex-grow">
           <div className="space-y-32 relative">
-          <div className="flex flex-row items-center justify-between h-16 md:h-20">
+            <div className="flex flex-row justify-stretch">
               <SignedIn>
                 <div className = "basis-1/4">
                 </div>
-                <div className="basis-1/2 flex flex-row items-center justify-center mt-4 md:mt-6 lg:mt-10">
+                <div className="basis-1/2 flex flex-row items-center justify-center">
                 <img
                   src={Bear4}
                   alt="A bear"
-                  className="w-16 md:w-24 lg:w-32 h-auto object-contain"
+                  className="w-12 md:w-32 h-auto overflow-hidden relative"
                 />
                 <p
                     className="limelight text-2xl md:text-5xl xl:text-7xl text-white"
@@ -74,8 +75,9 @@ function App() {
                   <div className="mx-4 my-auto">
                     <UserButton />
                   </div>
-                  <div className="paytone-one bg-customRed text-white rounded-lg flex items-center justify-center text-sm px-2 py-1 md:px-3 md:py-2 md:text-lg">
+                  <div className="paytone-one bg-customRed text-white rounded-lg flex items-center justify-center text-md px-2 py-1 md:px-4 md:py-2 md:text-xl">
                     <SignOutButton>LOG OUT</SignOutButton>
+                    
                   </div>
                 </div>
               </SignedIn>

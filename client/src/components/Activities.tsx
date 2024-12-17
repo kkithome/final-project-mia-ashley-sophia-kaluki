@@ -1,23 +1,30 @@
 import { useEffect, useState } from "react";
-import { doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
-import '../output.css';
-import '../styles/App.css';
-import '../styles/index.css';
+import {
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
+} from "firebase/firestore";
+import "../output.css";
+import "../styles/App.css";
+import "../styles/index.css";
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import { activities as fileActivities, Activity } from "../activityData";
-import firebaseConfig2 from '../../resources/firebase2.js'; 
+import firebaseConfig2 from "../../resources/firebase2.js";
 import { useParams, useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
-import CalendarIcon from "../assets/CalendarIcon.png"; 
+import CalendarIcon from "../assets/CalendarIcon.png";
 import UnfilledHeart from "../assets/UnfilledHeart.png";
-import FilledHeart from "../assets/FilledHeart.png";  
-import CheckBox from "../assets/CheckBox.png"; 
-import UnfilledCheckBox from "../assets/UnfilledCheckBox.png"; 
-import RedPin from "../assets/RedPin.png"; 
-import ForwardArrow from "../assets/ForwardArrow.png"; 
-import BackArrow from "../assets/BackArrow.png"; 
+import FilledHeart from "../assets/FilledHeart.png";
+import CheckBox from "../assets/CheckBox.png";
+import UnfilledCheckBox from "../assets/UnfilledCheckBox.png";
+import RedPin from "../assets/RedPin.png";
+import ForwardArrow from "../assets/ForwardArrow.png";
+import BackArrow from "../assets/BackArrow.png";
 
 interface ActivitiesProps {
   activities: Activity[];
@@ -25,22 +32,24 @@ interface ActivitiesProps {
 
 let app;
 if (!app) {
-  console.log("Database initialized"); 
-  app = initializeApp(firebaseConfig2, "activities"); 
+  console.log("Database initialized");
+  app = initializeApp(firebaseConfig2, "activities");
 } else {
-  app = getApp(); 
-  console.log("App already created"); 
+  app = getApp();
+  console.log("App already created");
 }
 const db = getFirestore(app);
 
-export {db}; 
+export { db };
 
 /**
- * This method creates a .ics file download so the user can 
+ * This method creates a .ics file download so the user can
  * add the event to their calendar.
  */
 const createICSFile = (activity: Activity) => {
-  const startDateTime = new Date(`${activity.date}T${convertTo24Hour(activity.startTime)}`).toISOString();
+  const startDateTime = new Date(
+    `${activity.date}T${convertTo24Hour(activity.startTime)}`
+  ).toISOString();
   const endDateTime = new Date(
     new Date(startDateTime).getTime() + 60 * 60 * 1000
   ).toISOString();
@@ -79,35 +88,42 @@ const convertTo24Hour = (time: string) => {
   if (period === "PM" && hour !== 12) hour += 12;
   if (period === "AM" && hour === 12) hour = 0;
 
-  return `${hour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:00`;
+  return `${hour.toString().padStart(2, "0")}:${minutes
+    .toString()
+    .padStart(2, "0")}:00`;
 };
 
 export default function Activities({ activities }: ActivitiesProps) {
-  const [activities2, setActivities] = useState<Activity[]>([]); 
+  const [activities2, setActivities] = useState<Activity[]>([]);
   const navigate = useNavigate();
   const [favorites, setFavorites] = useState<string[]>([]);
   const { user } = useUser();
-  const [checkedStates, setCheckedStates] = useState<Record<number, boolean>>({});
+  const [checkedStates, setCheckedStates] = useState<Record<number, boolean>>(
+    {}
+  );
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
 
   const totalPages = Math.ceil(activities2.length / itemsPerPage);
-  const currentItems = activities2.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const currentItems = activities2.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   useEffect(() => {
-  if (activities) {
-    console.log("Setting activities2:", activities);
-    setActivities(activities); 
-  } else {
-    console.warn("No activities provided");
-  }
-}, [activities]);
+    if (activities) {
+      console.log("Setting activities2:", activities);
+      setActivities(activities);
+    } else {
+      console.warn("No activities provided");
+    }
+  }, [activities]);
 
   useEffect(() => {
     console.log("Activities data:", activities);
     setActivities(activities);
   }, [activities]);
-  
+
   useEffect(() => {
     console.log("Updated activities2:", activities2);
   }, [activities2]);
@@ -115,11 +131,11 @@ export default function Activities({ activities }: ActivitiesProps) {
   useEffect(() => {
     console.log("Received activities:", activities);
   }, [activities]);
-  
+
   useEffect(() => {
     console.log("Updated activities2:", activities2);
   }, [activities2]);
-  
+
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage((prev) => prev + 1);
@@ -161,7 +177,10 @@ export default function Activities({ activities }: ActivitiesProps) {
             ? docSnapshot.data()?.attendees?.includes(user.id)
             : false;
         } catch (error) {
-          console.error(`Error fetching attendance for event ${eventId}:`, error);
+          console.error(
+            `Error fetching attendance for event ${eventId}:`,
+            error
+          );
         }
       }
 
@@ -233,19 +252,19 @@ export default function Activities({ activities }: ActivitiesProps) {
       console.error("User is not logged in");
       return;
     }
-  
+
     const eventRef = doc(db, "eventAttendees", eventId.toString());
-  
+
     try {
       const docSnapshot = await getDoc(eventRef);
-  
+
       if (!docSnapshot.exists()) {
         console.log("Event document does not exist. Creating a new one...");
         await setDoc(eventRef, { attendees: [] });
       }
-  
+
       const isAttending = docSnapshot.data()?.attendees?.includes(user.id);
-  
+
       if (isAttending) {
         console.log("Removing user from attendance");
         await updateDoc(eventRef, {
@@ -260,21 +279,25 @@ export default function Activities({ activities }: ActivitiesProps) {
     } catch (error) {
       console.error("Error updating attendance:", error);
     }
-  };  
+  };
 
   const fetchAttendance = async (eventId: number) => {
     try {
       const eventRef = doc(db, "eventAttendees", eventId.toString());
       const docSnapshot = await getDoc(eventRef);
-  
-      return docSnapshot.exists() ? docSnapshot.data()?.attendees?.length || 0 : 0;
+
+      return docSnapshot.exists()
+        ? docSnapshot.data()?.attendees?.length || 0
+        : 0;
     } catch (error) {
       console.error("Error fetching attendance:", error);
       return 0;
     }
   };
 
-  const [attendanceCounts, setAttendanceCounts] = useState<Record<number, number>>({});
+  const [attendanceCounts, setAttendanceCounts] = useState<
+    Record<number, number>
+  >({});
 
   useEffect(() => {
     const fetchAllAttendance = async () => {
@@ -286,9 +309,8 @@ export default function Activities({ activities }: ActivitiesProps) {
       setAttendanceCounts(counts);
     };
 
-  fetchAllAttendance();
-}, [activities2]);
-  
+    fetchAllAttendance();
+  }, [activities2]);
 
   useEffect(() => {
     if (activities && activities.length > 0) {
@@ -298,23 +320,28 @@ export default function Activities({ activities }: ActivitiesProps) {
         const collectionRef = collection(db, "activities");
         try {
           const existingActivitiesSnapshot = await getDocs(collectionRef);
-          const fetchedActivities: Activity[] = existingActivitiesSnapshot.docs.map((doc) => ({
-            id: doc.data().id,
-            title: doc.data().title,
-            description: doc.data().description,
-            date: doc.data().date,
-            startTime: doc.data().startTime,
-            endTime: doc.data().endTime,
-            image: doc.data().image,
-            latitude: doc.data().latitude,
-            longitude: doc.data().longitude,
-            location: typeof doc.data().location === "object" && doc.data().location.name ? doc.data().location.name : "Unknown",
-            attendance: doc.data().attendance,
-            attendees: doc.data().attendees,
-            time: doc.data().time,
-            category: doc.data().category,
-            onCampus: doc.data().onCampus,
-          }));
+          const fetchedActivities: Activity[] =
+            existingActivitiesSnapshot.docs.map((doc) => ({
+              id: doc.data().id,
+              title: doc.data().title,
+              description: doc.data().description,
+              date: doc.data().date,
+              startTime: doc.data().startTime,
+              endTime: doc.data().endTime,
+              image: doc.data().image,
+              latitude: doc.data().latitude,
+              longitude: doc.data().longitude,
+              location:
+                typeof doc.data().location === "object" &&
+                doc.data().location.name
+                  ? doc.data().location.name
+                  : "Unknown",
+              attendance: doc.data().attendance,
+              attendees: doc.data().attendees,
+              time: doc.data().time,
+              category: doc.data().category,
+              onCampus: doc.data().onCampus,
+            }));
           setActivities(fetchedActivities);
         } catch (error) {
           console.error("Error fetching activities:", error);
@@ -329,7 +356,7 @@ export default function Activities({ activities }: ActivitiesProps) {
       {currentItems.length === 0 ? (
         <p className="text-center text-gray-500">No activities found.</p>
       ) : (
-        currentItems.map((activity) => ( 
+        currentItems.map((activity) => (
           <div
             key={activity.id}
             className="border border-customLightBrown bg-customLightBrown rounded-2xl p-4 w-96 min-h-[440px] max-h-[440px] flex flex-col justify-between gap-4"
@@ -347,40 +374,49 @@ export default function Activities({ activities }: ActivitiesProps) {
                 {activity.title}
               </h2>
             </div>
-  
+
             <p className="kadwa text-xs text-left overflow-hidden text-ellipsis">
               {activity.description}
             </p>
-  
+
             <div className="kadwa flex text-s space-x-1">
               <div className="flex flex-col space-y-1">
                 <p>{activity.date}</p>
                 <p>{activity.startTime}</p>
                 <div className="flex flex-row space-x-2 max-w-[275px] min-w-[275px]">
-                  <img src={RedPin} className="w-4 h-4 object-cover rounded-lg" />
+                  <img
+                    src={RedPin}
+                    className="w-4 h-4 object-cover rounded-lg"
+                  />
                   <p className="text-xs">
-                  {typeof activity.location === "string" ? (
-                    <u>{activity.location}</u>
-                  ) : typeof activity.location === "object" ? (
-                    <u>{activity.location.name || "Unknown"}</u>
-                  ) : (
-                    "Unknown"
-                  )}
+                    {typeof activity.location === "string" ? (
+                      <u>{activity.location}</u>
+                    ) : typeof activity.location === "object" ? (
+                      <u>{activity.location.name || "Unknown"}</u>
+                    ) : (
+                      "Unknown"
+                    )}
                   </p>
                 </div>
               </div>
-              <p className="kadwa text-xs font-bold" style={{ marginLeft: '-3px' }}>
+              <p
+                className="kadwa text-xs font-bold"
+                style={{ marginLeft: "-3px" }}
+              >
                 {attendanceCounts[activity.id] || 0} Attending
               </p>
             </div>
-  
+
             <div className="flex flex-row gap-7 items-center justify-center">
               <button
                 className="paytone-one text-sm md:text-sm rounded-lg text-customBrown px-2 py-1 mt-1 mb-1 bg-gray-100 hover:bg-brown-700 hover:text-customRed focus:outline-none focus:ring-2 focus:ring-black"
                 onClick={() => createICSFile(activity)}
               >
                 <div className="flex items-center space-x-2">
-                  <img src={CalendarIcon} className="w-6 h-auto object-cover rounded-lg" />
+                  <img
+                    src={CalendarIcon}
+                    className="w-6 h-auto object-cover rounded-lg"
+                  />
                   <span>Add to Calendar</span>
                 </div>
               </button>
@@ -393,8 +429,10 @@ export default function Activities({ activities }: ActivitiesProps) {
               >
                 <div className="flex items-center space-x-1">
                   <img
-                    src={checkedStates[activity.id] ? CheckBox : UnfilledCheckBox}
-                    alt={checkedStates[activity.id] ? 'Checked' : 'Unchecked'}
+                    src={
+                      checkedStates[activity.id] ? CheckBox : UnfilledCheckBox
+                    }
+                    alt={checkedStates[activity.id] ? "Checked" : "Unchecked"}
                     className="w-6 h-6"
                   />
                   <span>Going</span>
@@ -402,7 +440,11 @@ export default function Activities({ activities }: ActivitiesProps) {
               </button>
               <button onClick={() => toggleFavorite(activity.id)}>
                 <img
-                  src={favorites.includes(activity.id.toString()) ? FilledHeart : UnfilledHeart}
+                  src={
+                    favorites.includes(activity.id.toString())
+                      ? FilledHeart
+                      : UnfilledHeart
+                  }
                   className="w-8 h-auto"
                 />
               </button>
@@ -411,20 +453,25 @@ export default function Activities({ activities }: ActivitiesProps) {
         ))
       )}
       <div className="flex items-center justify-end w-full mt-4 pr-20 mr-16">
-      <button
-        onClick={handlePreviousPage}
-        disabled={currentPage === 1}
-        className={`p-2 rounded-lg ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""}`}
-      >
-        <img src={BackArrow} alt="Previous" className="w-12 h-12" />
-      </button>
-      <button
-        onClick={handleNextPage}
-        disabled={currentPage === totalPages}
-        className={`p-2 rounded-lg ${currentPage === totalPages ? "opacity-50 cursor-not-allowed" : ""}`}
-      >
-        <img src={ForwardArrow} alt="Next" className="w-12 h-12" />
-      </button>
+        <button
+          onClick={handlePreviousPage}
+          disabled={currentPage === 1}
+          className={`p-2 rounded-lg ${
+            currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+        >
+          <img src={BackArrow} alt="Previous" className="w-12 h-12" />
+        </button>
+        <button
+          onClick={handleNextPage}
+          disabled={currentPage === totalPages}
+          className={`p-2 rounded-lg ${
+            currentPage === totalPages ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+        >
+          <img src={ForwardArrow} alt="Next" className="w-12 h-12" />
+        </button>
       </div>
-  </div>
-);}
+    </div>
+  );
+}

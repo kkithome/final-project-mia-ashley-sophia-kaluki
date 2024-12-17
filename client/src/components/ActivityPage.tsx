@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { collection, getDocs } from "firebase/firestore";
 import { doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
-import { db } from "./Activities";
+import { initializeApp, getApps, getApp } from "firebase/app";
+//import { db } from "./Activities";
 import { useUser } from "@clerk/clerk-react";
 import { Activity } from "../activityData";
 import "../styles/App.css";
@@ -10,6 +11,76 @@ import UnfilledHeart from "../assets/UnfilledHeart.png";
 import FilledHeart from "../assets/FilledHeart.png";  
 import "../styles/index.css";
 import CalendarIcon from "../assets/CalendarIcon.png"; 
+import { getFirestore } from "firebase/firestore";
+import firebaseConfig2 from "../../resources/firebase2.js";
+
+
+interface ActivitiesProps {
+  activities: Activity[];
+}
+
+let app;
+if (!app) {
+  console.log("Database initialized");
+  app = initializeApp(firebaseConfig2, "activities");
+} else {
+  app = getApp();
+  console.log("App already created");
+}
+const db = getFirestore(app);
+
+export { db };
+
+/**
+ * This method creates a .ics file download so the user can
+ * add the event to their calendar.
+ */
+const createICSFile = (activity: Activity) => {
+  const startDateTime = new Date(
+    `${activity.date}T${convertTo24Hour(activity.startTime)}`
+  ).toISOString();
+  const endDateTime = new Date(
+    new Date(startDateTime).getTime() + 60 * 60 * 1000
+  ).toISOString();
+
+  const icsContent = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "BEGIN:VEVENT",
+    `SUMMARY:${activity.title}`,
+    `DESCRIPTION:${activity.description}`,
+    `LOCATION:${activity.location}`,
+    `DTSTART:${startDateTime.replace(/[-:]/g, "").split(".")[0]}Z`,
+    `DTEND:${endDateTime.replace(/[-:]/g, "").split(".")[0]}Z`,
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+
+  const blob = new Blob([icsContent], { type: "text/calendar" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${activity.title}.ics`;
+  link.click();
+
+  URL.revokeObjectURL(url);
+};
+
+/**
+ * This method converts the time string to a more readable format.
+ */
+const convertTo24Hour = (time: string) => {
+  const [hourMin, period] = time.split(" ");
+  let [hour, minutes] = hourMin.split(":").map(Number);
+
+  if (period === "PM" && hour !== 12) hour += 12;
+  if (period === "AM" && hour === 12) hour = 0;
+
+  return `${hour.toString().padStart(2, "0")}:${minutes
+    .toString()
+    .padStart(2, "0")}:00`;
+};
 
 export default function ActivityPage() {
   const { id } = useParams();
@@ -196,14 +267,29 @@ export default function ActivityPage() {
   return (
     <div className="min-h-screen bg-customBrown text-white p-6">
       <div className="flex justify-start">
-      <button 
+        <button
           onClick={() => navigate(-1)}
           className="bg-customRed text-white px-4 py-2 rounded-lg flex items-center mb-8 paytone-one space-x-2"
         >
-                <div className="back-arrow">
-                </div>
-                <svg width="24px" height="24px" viewBox="0 0 24 24" stroke-width="1.5" fill="none" xmlns="http://www.w3.org/2000/svg" color="white"><path d="M21 12L3 12M3 12L11.5 3.5M3 12L11.5 20.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-                <span>Back to main</span>
+          <div className="back-arrow"></div>
+          <svg
+            width="24px"
+            height="24px"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            color="white"
+          >
+            <path
+              d="M21 12L3 12M3 12L11.5 3.5M3 12L11.5 20.5"
+              stroke="white"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></path>
+          </svg>
+          <span>Back to main</span>
         </button>
       </div>
       <div
@@ -220,14 +306,16 @@ export default function ActivityPage() {
             <h1 className="paytone-one text-4xl mb-4 text-customRed">
               {activity.title}
             </h1>
-            <p className="kadwa text-lg mb-6 text-black">{activity.description}</p>
+            <p className="kadwa text-lg mb-6 text-black">
+              {activity.description}
+            </p>
             <div className="kadwa text-lg space-y-4 text-black">
               <p>
-                <strong>Date:</strong> {activity.date}
+                <strong>Date and Time:</strong> {activity.date}
               </p>
-              <p>
+              {/* <p>
                 <strong>Time:</strong> {activity.startTime}
-              </p>
+              </p> */}
               {/* <p>
                 <strong>Location:</strong> {activity.location}
               </p> */}
@@ -244,7 +332,10 @@ export default function ActivityPage() {
                 onClick={() => createICSFile(activity)}
               >
                 <div className="flex items-center space-x-2">
-                  <img src={CalendarIcon} className="w-6 h-auto object-cover rounded-lg" />
+                  <img
+                    src={CalendarIcon}
+                    className="w-6 h-auto object-cover rounded-lg"
+                  />
                   <span>Add to Calendar</span>
                 </div>
               </button>
@@ -256,7 +347,11 @@ export default function ActivityPage() {
               </button> */}
               <button onClick={() => toggleFavorite(activity.id)}>
                 <img
-                  src={favorites.includes(activity.id.toString()) ? FilledHeart : UnfilledHeart}
+                  src={
+                    favorites.includes(activity.id.toString())
+                      ? FilledHeart
+                      : UnfilledHeart
+                  }
                   className="w-8 h-auto"
                 />
               </button>
