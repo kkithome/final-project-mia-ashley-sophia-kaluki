@@ -104,7 +104,7 @@ export default function ActivityPage() {
             title: data.title,
             description: data.description,
             date: data.date,
-            startTime: data.startTime,
+            startTime: data.start_time,
             endTime: data.endTime,
             image: data.image,
             location: location.name || "Unknown",
