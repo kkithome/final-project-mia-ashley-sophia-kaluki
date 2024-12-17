@@ -19,6 +19,9 @@ interface ActivitiesProps {
   activities: Activity[];
 }
 
+
+
+
 let app;
 if (!app) {
   console.log("Database initialized");
@@ -88,6 +91,7 @@ export default function ActivityPage() {
   const [activity, setActivity] = useState<Activity | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [favorites, setFavorites] = useState<string[]>([]);
+
 
   useEffect(() => {
     console.log("fetching activities")
