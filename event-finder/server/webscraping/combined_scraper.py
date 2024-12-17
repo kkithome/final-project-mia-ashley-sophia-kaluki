@@ -209,8 +209,8 @@ def scrape_events(source: Source):
             category = "Brown event"
             onCampus = True
             event = Event(source, id, title, description, image, date, start_time, 
-                        end_time, attendance,
-                        attendees, location, category, onCampus)
+                        end_time, attendance,attendees, location, category, 
+                        onCampus)
 
             event_id_map[id] = event
             events.append(event)
@@ -245,12 +245,16 @@ def scrape_eventbrite_events():
             ids.add(event_id)
             
             # Retrieves event details
-            title = a.get('aria-label', 'No title')
+            og_title = a.get('aria-label', 'No title')
+            title = og_title.replace("View", "")
             category = a.get('data-event-category')
             location_name = a.get('data-event-location', 'Location not specified')
             paid = a.get('data-event-paid-status') == 'paid'
             date_str = section.p.text if section.p else None
-            
+            split = date_str.split(",")
+            if len(split) == 3:
+                date_info = split[1]
+                time_info = split[2]
             # Get image
             image = section.parent.find('img', class_='event-card-image')
             img_url = image['src'] if image is not None else "No Image to Display"
@@ -265,8 +269,8 @@ def scrape_eventbrite_events():
                 title=title,
                 description="",  # We could fetch this from the event page if needed
                 image=img_url,
-                date=date_str,
-                start_time=None,  # Could be extracted from date_str if needed
+                date=date_info,
+                start_time=time_info, 
                 end_time=None,
                 attendance = 0,
                 attendees=[],
@@ -464,7 +468,7 @@ def main():
             print(all_events)
             return json_ready
 
-        else:
+        elif ((source.lower() != "brown") or (source.lower() != "eventbrite")):
             print(json.dumps({"result": "error", "error": "Invalid event source: please enter brown or eventbrite"}))
             sys.exit(1)
 

@@ -47,7 +47,7 @@ export interface LatLong {
 
 // Coordinates for Providence, Rhode Island
 const ProvidenceLatLong: LatLong = {
-  lat: 41.825743,
+  lat: 41.825743,
   long: -71.406371,
 };
 
