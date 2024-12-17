@@ -10,6 +10,14 @@ import { activities as fileActivities, Activity } from "../activityData";
 import firebaseConfig2 from '../../resources/firebase2.js'; 
 import { useParams, useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
+import CalendarIcon from "../assets/CalendarIcon.png"; 
+import UnfilledHeart from "../assets/UnfilledHeart.png";
+import FilledHeart from "../assets/FilledHeart.png";  
+import CheckBox from "../assets/CheckBox.png"; 
+import UnfilledCheckBox from "../assets/UnfilledCheckBox.png"; 
+import RedPin from "../assets/RedPin.png"; 
+import ForwardArrow from "../assets/ForwardArrow.png"; 
+import BackArrow from "../assets/BackArrow.png"; 
 
 interface ActivitiesProps {
   activities: Activity[];
@@ -79,10 +87,82 @@ export default function Activities({ activities }: ActivitiesProps) {
   const navigate = useNavigate();
   const [favorites, setFavorites] = useState<string[]>([]);
   const { user } = useUser();
+  const [checkedStates, setCheckedStates] = useState<Record<number, boolean>>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 9;
+
+  const totalPages = Math.ceil(activities2.length / itemsPerPage);
+  const currentItems = activities2.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   useEffect(() => {
     setActivities(activities);
   }, [activities]);
+  
+  useEffect(() => {
+    console.log("Updated activities2:", activities2);
+  }, [activities2]);
+
+  useEffect(() => {
+    console.log("Received activities:", activities);
+  }, [activities]);
+  
+  useEffect(() => {
+    console.log("Updated activities2:", activities2);
+  }, [activities2]);
+  
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prev) => prev - 1);
+    }
+  };
+
+  const toggleCheck = (activityId: number) => {
+    setCheckedStates((prevState) => ({
+      ...prevState,
+      [activityId]: !prevState[activityId],
+    }));
+  };
+
+  useEffect(() => {
+    const fetchAttendanceData = async () => {
+      if (!user?.id) return;
+
+      const attendanceCounts: Record<number, number> = {};
+      const userCheckedStates: Record<number, boolean> = {};
+
+      for (const activity of activities2) {
+        const eventId = activity.id;
+
+        try {
+          const eventRef = doc(db, "eventAttendees", eventId.toString());
+          const docSnapshot = await getDoc(eventRef);
+
+          attendanceCounts[eventId] = docSnapshot.exists()
+            ? docSnapshot.data()?.attendees?.length || 0
+            : 0;
+
+          userCheckedStates[eventId] = docSnapshot.exists()
+            ? docSnapshot.data()?.attendees?.includes(user.id)
+            : false;
+        } catch (error) {
+          console.error(`Error fetching attendance for event ${eventId}:`, error);
+        }
+      }
+
+      setAttendanceCounts(attendanceCounts);
+      setCheckedStates(userCheckedStates);
+    };
+
+    if (activities2.length > 0) {
+      fetchAttendanceData();
+    }
+  }, [activities2, user?.id]);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -231,31 +311,52 @@ export default function Activities({ activities }: ActivitiesProps) {
   }, [activities]);
 
   return (
-    <div className="flex flex-row items-center justify-center flex-wrap gap-8 space-x-5 md:space-x-8">
-      {activities2.map((activity) => (
-        <div
-          key={activity.id}
-          className="border border-customLightBrown bg-customLightBrown rounded-2xl p-4 w-96 h-130 text-center space-y-2"
-        >
-          <img
-            src={activity.image}
-            alt={activity.title}
-            className="w-full h-40 object-cover rounded-lg"
-          />
-          <h2
-            className="paytone-one text-customRed text-left cursor-pointer"
-            onClick={() => navigate(`/activity/${activity.id}`)}
-          >
-            {activity.title}
-          </h2>
-          <p className="kadwa text-xs text-left">{activity.description}</p>
-          <div className="kadwa flex justify-between flex-row text-s text-left space-x-3">
-            <div className="flex flex-col">
-              <p>
-                <strong>Date:</strong> {activity.date}
-              </p>
-              <p>
-                <strong>Time:</strong> {activity.startTime}
+    <div className="flex flex-row items-center justify-center flex-wrap gap-8">
+      {currentItems.length === 0 ? (
+        <p className="text-center text-gray-500">No activities found.</p>
+      ) : (
+        currentItems.map((activity) => ( 
+          <div
+            key={activity.id}
+            className="border border-customLightBrown bg-customLightBrown rounded-2xl p-4 w-96 min-h-[440px] flex flex-col justify-between gap-4"
+          > 
+            <div className="flex flex-col gap-2">
+              <img
+                src={activity.image}
+                alt={activity.title}
+                className="w-full h-40 object-cover rounded-lg"
+              />
+              <h2
+                className="paytone-one text-customRed text-xl text-left cursor-pointer"
+                onClick={() => navigate(`/activity/${activity.id}`)}
+              >
+                {activity.title}
+              </h2>
+            </div>
+  
+            <p className="kadwa text-xs text-left overflow-hidden text-ellipsis">
+              {activity.description}
+            </p>
+  
+            <div className="kadwa flex text-s space-x-1">
+              <div className="flex flex-col space-y-1">
+                <p>{activity.date}</p>
+                <p>{activity.startTime}</p>
+                <div className="flex flex-row space-x-2 max-w-[275px] min-w-[275px]">
+                  <img src={RedPin} className="w-4 h-4 object-cover rounded-lg" />
+                  <p className="text-xs">
+                  {typeof activity.location === "string" ? (
+                    <u>{activity.location}</u>
+                  ) : typeof activity.location === "object" ? (
+                    <u>{activity.location.name || "Unknown"}</u>
+                  ) : (
+                    "Unknown"
+                  )}
+                  </p>
+                </div>
+              </div>
+              <p className="kadwa text-xs font-bold" style={{ marginLeft: '-3px' }}>
+                {attendanceCounts[activity.id] || 0} Attending
               </p>
             </div>
             <p className="kadwa text-xs">{activity.attendees.length} Attending</p>
@@ -287,9 +388,23 @@ export default function Activities({ activities }: ActivitiesProps) {
               {favorites.includes(activity.id.toString()) ? "Remove from Favorites" : "Add to Favorites"}
             </button>
           </div>
-        </div>
-      ))}
-    </div>
-  );
-
-}
+        ))
+      )}
+      <div className="flex items-center justify-end w-full mt-4 pr-20 mr-16">
+      <button
+        onClick={handlePreviousPage}
+        disabled={currentPage === 1}
+        className={`p-2 rounded-lg ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""}`}
+      >
+        <img src={BackArrow} alt="Previous" className="w-12 h-12" />
+      </button>
+      <button
+        onClick={handleNextPage}
+        disabled={currentPage === totalPages}
+        className={`p-2 rounded-lg ${currentPage === totalPages ? "opacity-50 cursor-not-allowed" : ""}`}
+      >
+        <img src={ForwardArrow} alt="Next" className="w-12 h-12" />
+      </button>
+      </div>
+  </div>
+);}

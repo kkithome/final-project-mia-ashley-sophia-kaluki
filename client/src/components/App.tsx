@@ -64,8 +64,8 @@ function App() {
                   alt="A bear"
                   className="w-12 md:w-32 h-auto overflow-hidden relative"
                 />
-                  <p
-                    className="limelight text-1xl md:text-6xl text-white"
+                <p
+                    className="limelight text-2xl md:text-5xl xl:text-7xl text-white"
                     aria-label="Page Title"
                   >
                     Bear Tracks

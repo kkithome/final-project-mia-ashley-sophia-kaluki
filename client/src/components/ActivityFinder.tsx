@@ -25,9 +25,44 @@ export default function ActivitiesFinder() {
   const [searchResults, setSearchResults] = useState(initialSearchResults);
 
   useEffect(() => {
-    if (!location.state?.searchResults) {
-      console.warn("No search results passed. Falling back to default activities.");
-    }
+    const fetchInitialActivities = async () => {
+      try {
+        if (!location.state?.searchResults) {
+          console.warn("No search results passed. Fetching all activities as default.");
+
+          const searchCollection = collection(db, "activities");
+          const querySnapshot = await getDocs(searchCollection);
+
+          const allActivities: Activity[] = querySnapshot.docs.map((doc) => {
+            const data = doc.data();
+            return {
+              id: data.id,
+              title: data.title,
+              description: data.description,
+              date: data.date,
+              startTime: data.startTime,
+              endTime: data.endTime,
+              image: data.image,
+              location: typeof data.location === "object" && data.location.name ? data.location.name : "Unknown",
+              latitude: data.location?.latitude || "Unknown",
+              longitude: data.location?.longitude || "Unknown",
+              attendance: data.attendance,
+              attendees: data.attendees,
+              time: data.time,
+              category: data.category,
+              onCampus: data.onCampus,
+            };
+          });
+
+          setSearchResults(allActivities);
+          console.log("all activities:", allActivities); 
+        }
+      } catch (error) {
+        console.error("Error fetching initial activities:", error);
+      }
+    };
+
+    fetchInitialActivities();
   }, [location.state]);
 
   useEffect(() => {
@@ -61,11 +96,11 @@ export default function ActivitiesFinder() {
         <Activities activities={searchResults} />
       </div>
       <div className="flex flex-col items-center justify-center">
-        <div className="flex flex-row items-end justify-between">
+        <div className="flex flex-row items-end justify-between mb-4">
           <div className="basis-1/4"></div>
           <div className="basis-1/2">
             <h3
-              className="limelight text-3xl md:text-7xl text-white"
+              className="limelight text-2xl md:text-5xl xl:text-7xl text-white"
               aria-label="Page Title"
             >
               Map
