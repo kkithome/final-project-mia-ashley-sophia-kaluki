@@ -84,6 +84,7 @@ export default function ActivityPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [activity, setActivity] = useState<Activity | null>(null);
+  
 
   useEffect(() => {
     const fetchActivity = async () => {
