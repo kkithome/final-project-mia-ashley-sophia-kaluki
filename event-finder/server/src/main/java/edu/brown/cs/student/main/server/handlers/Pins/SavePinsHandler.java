@@ -40,7 +40,7 @@ public class SavePinsHandler implements Route {
       pinData.put("coordinates", Map.of("lat", lat, "long", lon));
       pinData.put("pinID", pinID);
 
-      this.pinsStorageHandler.addDocument( "pins", pinID, pinData);
+      this.pinsStorageHandler.addDocument("pins", pinID, pinData);
 
       String allPinsDocID = UUID.randomUUID().toString();
       this.pinsStorageHandler.addDocument("pins", allPinsDocID, pinData);

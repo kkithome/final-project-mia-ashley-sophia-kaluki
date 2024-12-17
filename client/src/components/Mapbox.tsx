@@ -2,10 +2,12 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { useEffect, useState, useRef } from "react";
 import { useUser,
 } from "@clerk/clerk-react";
-import { addPin, clearUser, getPins } from "../utils/api";
+import { getPins } from "../utils/api";
 import '../styles/App.css';
 import '../styles/index.css';
 import '../output.css';
+import firebaseConfig2 from "../../resources/firebase2.js"; 
+
 
 // Import Mapbox components from react-map-gl library
 import Map, {
@@ -15,26 +17,21 @@ import Map, {
   ViewStateChangeEvent,
   Marker,
 } from "react-map-gl";
-import { geoLayer, overlayData } from "../utils/overlay";
-
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApp } from "firebase/app";
 import { addDoc, getFirestore } from "firebase/firestore";
-import { collection, doc, setDoc } from "firebase/firestore";
+import { collection, doc, setDoc, getDocs } from "firebase/firestore";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCggcN4WSOUb6MsVEPsxpEG_4MFpnW0hyw",
-  authDomain: "maps-hgnguyen.firebaseapp.com",
-  projectId: "maps-hgnguyen",
-  storageBucket: "maps-hgnguyen.firebasestorage.app",
-  messagingSenderId: "364594908351",
-  appId: "1:364594908351:web:812fd2cc0f3a97b9318a0a",
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-
-// Initialize Cloud Firestore and get a reference to the service
+let app;
+if (!app) {
+  console.log("Database initialized");
+  app = initializeApp(firebaseConfig2, "activities");
+} else {
+  app = getApp();
+  console.log("App already created");
+}
 const db = getFirestore(app);
+
+export { db }; 
 
 // API key for Mapbox, read from environment variables
 const MAPBOX_API_KEY = process.env.MAPBOX_TOKEN;
@@ -78,146 +75,65 @@ export default function Mapbox() {
   // variable for pins
   const [pins, setPins] = useState<LatLong[]>([]);
 
-  // load pins
   useEffect(() => {
-    getPins(user.id).then((data) => {
-      setPins(
-        data.pins.map((str: string) => {
-          const parts = str.split(":");
-          return { lat: parseFloat(parts[0]), long: parseFloat(parts[1]) };
-        })
-      );
-    });
-  }, [user.id]);
+    const fetchPins = async () => {
+      try {
+        const collection1 = collection(db, "activities");
+        const existingActivitiesSnapshot = await getDocs(collection1);
+        const fetchedPins = existingActivitiesSnapshot.docs
+          .map((doc) => {
+            const location = doc.data().location; 
+            const event = doc.data()
+            console.log(event)
+            // debugging print
+            console.log("Processing location:", location);
+            console.log("Processing lat:", location.latitude);
 
-  const [overlay, setOverlay] = useState<GeoJSON.FeatureCollection | undefined>(
-    undefined
-  );
-
-  // Add pins to pins variable and load to firebase
-  function onMapClick(e: MapLayerMouseEvent) {
-    console.log(e.lngLat.lat);
-    console.log(e.lngLat.lng);
-    const latLng: LatLong = {
-      lat: e.lngLat.lat,
-      long: e.lngLat.lng,
-    };
-    setPins([...pins, latLng]);
-    if (user) {
-      addPin(user.id, latLng);
-    } else {
-      console.warn("User is not logged in, cannot add pin.");
-    }
-  }
-
-  useEffect(() => {
-    overlayData("").then((response: GeoJSON.FeatureCollection | undefined) => {
-      setOverlay(response);
-      console.log(response);
-    });
-  }, []);
-
-  // state variable for the query
-  const [query, setQuery] = useState<string>("");
-
-  function handleSearch() {
-    overlayData(query).then(
-      (response: GeoJSON.FeatureCollection | undefined) => {
-        if (response) {
-          // Add a custom property to highlight specific areas
-          const highlightedOverlay = {
-            ...response,
-            features: response.features.map((feature) => {
-              const isHighlighted = feature.properties?.highlight === "true"; // Adjust based on your backend response
+            if (location?.latitude && location?.longitude) {
               return {
-                ...feature,
-                properties: {
-                  ...feature.properties,
-                  isHighlighted, // Add a flag for highlighting
-                },
+                lat: parseFloat(location.latitude),
+                long: parseFloat(location.longitude),
               };
-            }),
-          };
+            }
+            return null; 
+          })
+          .filter((pin): pin is LatLong => pin !== null);
 
-          setOverlay(highlightedOverlay);
-          console.log("Highlighted Overlay:", highlightedOverlay);
-        }
+        setPins(fetchedPins);
+        console.log(fetchedPins)
+
+      } catch (error) {
+        console.error("Error fetching pins:", error);
       }
-    );
-
-    console.log("Search Query:", query);
-    setQuery("");
-  }
-
-  useEffect(() => {
-    if (overlay && mapRef.current) {
-      const mapInstance = mapRef.current;
-      overlay.features.forEach((feature) => {
-        const isHighlighted = feature.properties?.isHighlighted;
-
-        mapInstance.addLayer({
-          id: `layer-${feature.id}`,
-          type: "fill",
-          source: {
-            type: "geojson",
-            data: overlay, // GeoJSON data
-          },
-          paint: {
-            "fill-color": isHighlighted ? "#FF5733" : "#cccccc", // Highlighted areas in orange
-            "fill-opacity": isHighlighted ? 0.8 : 0.5,
-          },
-        });
-      });
-    }
-  }, [overlay]);
-
-  // use effect to search by pressing enter
-  useEffect(() => {
-    function handleKeyPress(event: KeyboardEvent) {
-      if (event.key === "Enter") {
-        handleSearch();
-        console.log("enter pressed");
-      }
-    }
-    document.addEventListener("keypress", handleKeyPress);
-
-    return () => {
-      document.removeEventListener("keypress", handleKeyPress);
     };
-  }, [query, handleSearch]);
+    fetchPins();
+  }, [USER_ID]);
+
+  // useEffect(() => {
+  //   const initializePins = async () => {
+  //     await fetchPins();
+  //   };
+  //   initializePins();
+  // }, []);
 
   return (
     <div className="w-full">
-      {/* <div className="flex flex-row items-center justify-center mb-8">
-        <input
-          type="text"
-          placeholder="Enter a Keyword"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          style={{ width: "400px" }}
-        />
-        <button onClick={handleSearch}>Enter</button>
-      </div> */}
       <div className="w-10/12 mx-auto h-[800px] rounded-lg relative mb-8">
         <Map
           mapboxAccessToken={MAPBOX_API_KEY}
           {...viewState}
           style={{
-            width: "100%", 
-            height: "100%", 
+            width: "100%",
+            height: "100%",
             borderRadius: "20px",
           }}
           mapStyle={"mapbox://styles/mapbox/streets-v12"}
           onMove={(ev: ViewStateChangeEvent) => setViewState(ev.viewState)}
-          onClick={(ev: MapLayerMouseEvent) => onMapClick(ev)}
         >
-          {pins.map((pin) => (
-            <Marker // add a marker for every pin in the pins variable
-              latitude={pin.lat}
-              longitude={pin.long}
-            >
+          {pins.map((pin, index) => (
+            <Marker key={index} latitude={pin.lat} longitude={pin.long}>
               <img
-                src="/src/components/map-marker.png"
+                src="/src/assets/BrownPin.png" 
                 style={{
                   width: "24px",
                   height: "24px",
@@ -228,19 +144,7 @@ export default function Mapbox() {
             </Marker>
           ))}
           <div style={{ position: "absolute", top: 15, right: 15, zIndex: 1 }}>
-            <button
-              onClick={async () => {
-                // a button to clear pins, also clear data from firebase
-                setPins([]);
-                await clearUser(user.id);
-              }}
-            >
-              Clear My Pins
-            </button>
           </div>
-          <Source id="geo_data" type="geojson" data={overlay}>
-            <Layer {...geoLayer} />
-          </Source>
         </Map>
       </div>
     </div>
