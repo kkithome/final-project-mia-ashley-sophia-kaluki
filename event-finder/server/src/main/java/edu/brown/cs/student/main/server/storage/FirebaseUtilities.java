@@ -35,7 +35,6 @@ public class FirebaseUtilities implements StorageInterface {
     FirebaseApp.initializeApp(options);
   }
 
-
   @Override
   public List<Map<String, Object>> getCollection(String collection_id)
       throws InterruptedException, ExecutionException, IllegalArgumentException {
@@ -44,8 +43,7 @@ public class FirebaseUtilities implements StorageInterface {
     }
 
     Firestore db = FirestoreClient.getFirestore();
-    CollectionReference dataRef =
-        db.collection(collection_id);
+    CollectionReference dataRef = db.collection(collection_id);
 
     QuerySnapshot dataQuery = dataRef.get().get();
 
@@ -57,8 +55,8 @@ public class FirebaseUtilities implements StorageInterface {
     return data;
   }
 
-  public DocumentReference getDocumentReference(String collection_id, String doc_id) throws
-      ExecutionException, InterruptedException {
+  public DocumentReference getDocumentReference(String collection_id, String doc_id)
+      throws ExecutionException, InterruptedException {
     Firestore db = FirestoreClient.getFirestore();
     return db.collection(collection_id).document(doc_id);
   }

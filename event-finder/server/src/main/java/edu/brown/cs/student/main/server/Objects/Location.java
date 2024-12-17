@@ -5,10 +5,13 @@ import com.squareup.moshi.Json;
 public class Location {
   @Json(name = "name")
   private String name;
+
   @Json(name = "latitude")
   private String latitude;
+
   @Json(name = "longitude")
   private String longitude;
+
   @Json(name = "url")
   private String url;
 

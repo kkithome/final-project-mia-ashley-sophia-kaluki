@@ -8,14 +8,12 @@ import edu.brown.cs.student.main.server.Objects.Event;
 import edu.brown.cs.student.main.server.Objects.Location;
 import edu.brown.cs.student.main.server.Objects.Utils;
 import edu.brown.cs.student.main.server.storage.StorageInterface;
-import io.grpc.Context.Storage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import javax.swing.text.Document;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -58,17 +56,16 @@ public class ScraperHandler implements Route {
 
   private void saveToFirestore(List<Event> events) throws ExecutionException, InterruptedException {
 
-
-    List<Map<String,Object>> allEvents = this.eventStorageHandler.getCollection("activities");
+    List<Map<String, Object>> allEvents = this.eventStorageHandler.getCollection("activities");
 
     if (allEvents == null) {
       allEvents = new ArrayList<>();
     }
-    for (Event event: events) {
+    for (Event event : events) {
       String eventSource = event.getSource();
       String eventTitle = event.getTitle();
       String eventDate = event.getDate();
-      String eventID = eventSource + " - " + eventTitle + " " + eventDate ;
+      String eventID = eventSource + " - " + eventTitle + " " + eventDate;
 
       DocumentReference docRef = db.collection("activities").document(eventID);
 
@@ -104,7 +101,6 @@ public class ScraperHandler implements Route {
 
       this.eventStorageHandler.addDocument("activities", eventID, eventData);
       allEvents.add(eventData);
-
     }
   }
 }
