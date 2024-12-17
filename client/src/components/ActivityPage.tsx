@@ -313,9 +313,9 @@ export default function ActivityPage() {
               <p>
                 <strong>Date and Time:</strong> {activity.date}
               </p>
-              {/* <p>
+              <p>
                 <strong>Time:</strong> {activity.startTime}
-              </p> */}
+              </p>
               {/* <p>
                 <strong>Location:</strong> {activity.location}
               </p> */}
