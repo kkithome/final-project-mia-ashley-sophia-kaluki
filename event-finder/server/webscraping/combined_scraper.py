@@ -4,6 +4,7 @@ from collections import Counter
 import requests
 from datetime import datetime
 import time
+import random
 from enum import Enum
 import json
 import sys
@@ -135,6 +136,15 @@ def driver_helper(url, wait_class_name, source:Source):
     return soup
 
 
+event_id_map = {}
+
+def generate_event_id(event_id_map):
+    while True:
+        random_id = random.randint(0, 1000)
+        if random_id not in event_id_map:
+            return random_id
+    
+
 def scrape_events(source: Source):
     """
     Fetches events from the source (Events@Brown, EventBrite, or Go Providence)
@@ -155,7 +165,7 @@ def scrape_events(source: Source):
         event_items = soup.find_all("div", class_= "lw_cal_event")
         for item in event_items:
             source = Source.BROWN
-            id = len(events) + 1
+            id = generate_event_id(event_id_map)
             title = get_event_title(item, source) # done for Brown
             description_and_date = get_event_description_and_date(item, source)
             description = description_and_date.description
@@ -176,7 +186,8 @@ def scrape_events(source: Source):
             event = Event(source, id, title, description, image, date, start_time, 
                         end_time, attendance,
                         attendees, location, category, onCampus)
-            
+
+            event_id_map[id] = event
             events.append(event)
 
     return events
@@ -222,7 +233,7 @@ def scrape_eventbrite_events():
             # Create Event object
             event = Event(
                 source=Source.EVENTBRITE,
-                id=len(events) + 1,
+                id=generate_event_id(event_id_map),
                 title=title,
                 description="",  # We could fetch this from the event page if needed
                 image=img_url,
@@ -236,6 +247,7 @@ def scrape_eventbrite_events():
                 onCampus=False
             )
             
+            event_id_map[id] = event
             events.append(event)
             
     except Exception as e:
