@@ -26,11 +26,10 @@ test("test a brown.edu user can authenticate", async ({ page }) => {
 // // testing for error message when a non-brown.edu user tries to create an account
 test('testing for error message when a non-brown.edu user tries to create an account', async ({ page }) => {
   await page.goto('http://localhost:8000/');
+  await page.goto('http://localhost:8000/');
   await page.getByRole('button', { name: 'SIGN UP' }).click();
   await page.getByPlaceholder('Enter your email address').click();
   await page.getByPlaceholder('Enter your email address').fill('team@baist.ai');
-  await page.getByPlaceholder('Enter your password').click();
-  await page.getByPlaceholder('Enter your password').fill('testingpassword!');
   await page.getByRole('button', { name: 'Continue', exact: true }).click();
   expect(page.getByText('You do not have permission to'));
 });
