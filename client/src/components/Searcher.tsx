@@ -90,6 +90,7 @@ export default function Searcher() {
           }
     };
 
+    /** go back to main page */
     const handleBack = () => {
         navigate('/');
     };

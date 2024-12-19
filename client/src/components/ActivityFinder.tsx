@@ -24,6 +24,7 @@ export default function ActivitiesFinder() {
   const initialSearchResults = location.state?.searchResults || [];
   const [searchResults, setSearchResults] = useState(initialSearchResults);
 
+  /** fetch the initial activiites */
   useEffect(() => {
     const fetchInitialActivities = async () => {
       try {
@@ -93,7 +94,7 @@ export default function ActivitiesFinder() {
         </button>
       </div>
       <div className="flex flex-col space-x-10">
-        <Activities activities={searchResults} />
+        <Activities activities={searchResults}/>
       </div>
       <div className="flex flex-col items-center justify-center">
         <div className="flex flex-row items-end justify-between mb-4">

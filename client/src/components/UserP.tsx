@@ -19,6 +19,7 @@ export default function UserP() {
   const navigate = useNavigate();
   const [upcomingEvents, setUpcomingEvents] = useState<ActivityEvent[]>([]);
 
+  /** get the user's favorites list */
   useEffect(() => {
     const fetchFavorites = async () => {
       if (!user?.id) {
@@ -26,8 +27,6 @@ export default function UserP() {
         setLoading(false);
         return;
       }
-    
-      console.log("Fetching favorites for user:", user.id);
     
       try {
         const favoritesRef = doc(db, "favorites", user.id);
@@ -64,61 +63,89 @@ export default function UserP() {
       }
     };
     fetchFavorites();
-}, [user?.id]);
+  }, [user?.id]);
 
   const backToMain = () => {
     navigate("/"); 
   };
 
+  /** get the events the user is going to */
   useEffect(() => {
     const fetchGoingEvents = async () => {
-      if (!user?.id) return;
-
+      if (!user?.id) {
+        console.warn("No user ID found");
+        return;
+      }
+      console.log("Fetching 'Going' events for user ID:", user.id);
+  
       try {
         const attendeesCollectionRef = collection(db, "eventAttendees");
-        const q = query(attendeesCollectionRef, where("attendees", "array-contains", { userId: user.id }));
-        const querySnapshot = await getDocs(q);
-
+        const querySnapshot = await getDocs(attendeesCollectionRef);
+  
         const events: Activity[] = [];
         for (const docSnapshot of querySnapshot.docs) {
           const eventId = docSnapshot.id;
-          const activityDocRef = doc(db, "activities", eventId);
-          const activitySnapshot = await getDoc(activityDocRef);
-
-          if (activitySnapshot.exists()) {
-            const data = activitySnapshot.data();
-            events.push({
-              id: parseInt(eventId, 10),
-              title: data.title,
-              description: data.description,
-              date: data.date,
-              startTime: data.start_time,
-              endTime: data.end_time,
-              image: data.image,
-              latitude: data.latitude,
-              longitude: data.longitude,
-              location:
-                typeof data.location === "object" && data.location.name
-                  ? data.location.name
-                  : "Unknown",
-              attendance: data.attendance,
-              attendees: data.attendees,
-              time: data.time,
-              category: data.category,
-              onCampus: data.onCampus,
-            });
+          const data = docSnapshot.data();
+          const attendees = data.attendees || [];
+          console.log("Attendees for Event ID:", eventId, attendees);
+  
+          const isUserGoing = attendees.some(
+            (attendee) => attendee.userId === user.id
+          );
+  
+          console.log(`User going to Event ID ${eventId}:`, isUserGoing);
+  
+          if (isUserGoing) {
+            console.log("Querying activity for Event ID:", eventId);
+            const activitiesCollectionRef = collection(db, "activities");
+            const activityQuery = query(
+              activitiesCollectionRef,
+              where("id", "==", parseInt(eventId, 10))
+            );
+            const activityQuerySnapshot = await getDocs(activityQuery);
+  
+            if (!activityQuerySnapshot.empty) {
+              const activityDoc = activityQuerySnapshot.docs[0]; 
+              const activityData = activityDoc.data();
+              console.log("Activity data for Event ID:", eventId, activityData);
+  
+              events.push({
+                id: parseInt(eventId, 10),
+                title: activityData.title,
+                description: activityData.description,
+                date: activityData.date,
+                startTime: activityData.start_time,
+                endTime: activityData.end_time,
+                image: activityData.image,
+                latitude: activityData.latitude,
+                longitude: activityData.longitude,
+                location:
+                  typeof activityData.location === "object" &&
+                  activityData.location.name
+                    ? activityData.location.name
+                    : "Unknown",
+                attendance: activityData.attendance,
+                attendees: activityData.attendees,
+                time: activityData.time,
+                category: activityData.category,
+                onCampus: activityData.onCampus,
+              });
+            } else {
+              console.warn(`No activity found for Event ID: ${eventId}`);
+            }
           }
         }
-        console.error("going events:", events);
+  
+        console.log("Final Going Events:", events);
         setGoingEvents(events);
       } catch (error) {
         console.error("Error fetching 'Going' events:", error);
       }
     };
-
+  
     fetchGoingEvents();
   }, [user?.id]);
-
+  
   return (
     <div className="min-h-screen bg-customBrown text-white p-6">
       <div className="flex justify-start mt-6">
@@ -198,26 +225,26 @@ export default function UserP() {
         Upcoming Events
       </h3>
       {goingEvents.length === 0 ? (
-        <p className="kadwa text-customBrown">You haven't selected any events yet.</p>
-      ) : (
-        <ul className="divide-y divide-customBrown">
-          {goingEvents.map((event) => (
-            <li
-              key={event.id}
-              className="flex items-center space-x-4 py-4 cursor-pointer"
-              onClick={() => navigate(`/activity/${event.id}`)}
-            >
-              <img
-                src={event.image}
-                alt={event.title}
-                className="w-24 h-16 rounded-lg object-cover"
-              />
-              <h2 className="kadwa text-md text-customBrown hover:text-customRed">
-                {event.title}
-              </h2>
-            </li>
-          ))}
-        </ul> )}
+      <p className="kadwa text-customBrown">You haven't selected any events yet.</p>
+        ) : (
+          <ul className="divide-y divide-customBrown">
+            {goingEvents.map((event) => (
+              <li key={event.id} className="flex items-center space-x-4 py-4">
+                <img
+                  src={event.image}
+                  alt={event.title}
+                  className="w-24 h-16 rounded-lg object-cover"
+                />
+                <a
+                  href={`/activity/${event.id}`}
+                  className="kadwa text-md text-customBrown hover:text-customRed underline"
+                >
+                  {event.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
         </div>
       </div>
     </div>

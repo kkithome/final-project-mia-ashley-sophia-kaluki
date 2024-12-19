@@ -16,6 +16,7 @@ import DropdownButton from 'react-bootstrap/DropdownButton';
 export default function Home() {
   const navigate = useNavigate();
 
+  /** go back to activity finder after user clicks search */
   const handleSearchClick = () => {
     navigate("/activity-finder"); 
   };

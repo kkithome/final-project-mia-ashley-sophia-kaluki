@@ -34,7 +34,7 @@ const firebaseConfig = {
   appId: process.env.APP_ID,
 };
 
-// Initialize Firebase with the provided configuration
+// initialize Firebase with the provided configuration
 let app;
 if (!app) {
   app = initializeApp(firebaseConfig);
@@ -48,8 +48,8 @@ const db = getFirestore(app);
 export { db };
 
 function App() {
-  
   return (
+    /** create routes */
     <Router>
       <div className="bg-customBrown min-h-screen flex flex-col">
         <main className="flex-grow">

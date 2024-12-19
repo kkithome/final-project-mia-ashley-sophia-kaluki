@@ -4,13 +4,14 @@ import { Activity } from "../activityData";
 
 const searchActivities = async (keyword: string = "", filters: any = {}): Promise<Activity[]> => {
   const { isOnCampus, startDate, endDate, category, time } = filters;
-
   const searchCollection = collection(db, "activities");
   const startDateFilter = startDate || new Date().toISOString().split("T")[0];
 
+  /** initially get all activities and then start to filter them */
   try {
     let baseQuery = query(searchCollection, where("date", ">=", startDateFilter));
 
+    /** filtering by category */
     if (category) {
       baseQuery = query(baseQuery, where("category", "==", category));
     }
@@ -39,6 +40,7 @@ const searchActivities = async (keyword: string = "", filters: any = {}): Promis
       };
     });
 
+    /** searching title & description for keyword */
     if (keyword) {
       const lowerKeyword = keyword.toLowerCase();
       fetchedActivities = fetchedActivities.filter(
@@ -69,6 +71,7 @@ const searchActivities = async (keyword: string = "", filters: any = {}): Promis
   }
 };
 
+/** change time string to 24 hour */
 const convertTo24Hour = (time: string): string => {
   const [hourMin, period] = time.split(" ");
   let [hour, minutes] = hourMin.split(":").map(Number);
