@@ -19,6 +19,7 @@ export default function UserP() {
   const navigate = useNavigate();
   const [upcomingEvents, setUpcomingEvents] = useState<ActivityEvent[]>([]);
 
+  /** get the user's favorites list */
   useEffect(() => {
     const fetchFavorites = async () => {
       if (!user?.id) {
@@ -26,8 +27,6 @@ export default function UserP() {
         setLoading(false);
         return;
       }
-    
-      console.log("Fetching favorites for user:", user.id);
     
       try {
         const favoritesRef = doc(db, "favorites", user.id);
@@ -64,12 +63,13 @@ export default function UserP() {
       }
     };
     fetchFavorites();
-}, [user?.id]);
+  }, [user?.id]);
 
   const backToMain = () => {
     navigate("/"); 
   };
 
+  /** get the events the user is going to */
   useEffect(() => {
     const fetchGoingEvents = async () => {
       if (!user?.id) {
@@ -146,7 +146,6 @@ export default function UserP() {
     fetchGoingEvents();
   }, [user?.id]);
   
-
   return (
     <div className="min-h-screen bg-customBrown text-white p-6">
       <div className="flex justify-start mt-6">

@@ -7,9 +7,6 @@ import '../styles/App.css';
 import '../styles/index.css';
 import '../output.css';
 import firebaseConfig2 from "../../resources/firebase2.js"; 
-
-
-// Import Mapbox components from react-map-gl library
 import Map, {
   Layer,
   MapLayerMouseEvent,
