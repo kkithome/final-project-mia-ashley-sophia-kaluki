@@ -49,48 +49,53 @@ const createICSFile = (activity: Activity) => {
   let dtend = "";
   let rrule = "";
 
-  if (activity.date.toLowerCase().includes("every")) {
-    rrule = "FREQ=DAILY";
-  } else if (activity.date.toLowerCase().includes("-")) {
-    rrule = "FREQ=WEEKLY;BYDAY=" + activity.date.split("-").map((day) => day.trim().toUpperCase().slice(0, 2)).join(",");
-  } else {
-    try {
-      const dateObj = new Date(activity.date);
-      if (!isNaN(dateObj.getTime())) {
-        dtstart = dateObj.toISOString().split("T")[0].replace(/-/g, "");
-      }
-    } catch {
-      console.error("Invalid date format:", activity.date);
-    }
-  }
+  // if (activity.date.toLowerCase().includes("every")) {
+  //   rrule = "FREQ=DAILY";
+  // } else if (activity.date.toLowerCase().includes("-")) {
+  //   rrule = "FREQ=WEEKLY;BYDAY=" + activity.date.split("-").map((day) => day.trim().toUpperCase().slice(0, 2)).join(",");
+  // } else {
+  //   try {
+  //     const dateObj = new Date(activity.date);
+  //     if (!isNaN(dateObj.getTime())) {
+  //       dtstart = dateObj.toISOString().split("T")[0].replace(/-/g, "");
+  //     } else {
+  //       console.error("Invalid date format:", activity.date);
+  //     }
+  //   } catch {
+  //     console.error("Invalid date format:", activity.date);
+  //   }
+  // }
 
-  const startTime = convertTo24Hour(activity.startTime);
-  const endTime = convertTo24Hour(activity.endTime);
+  // const startTime = convertTo24Hour(activity.startTime);
+  // const endTime = convertTo24Hour(activity.endTime);
 
-  if (dtstart) {
-    dtstart += `T${startTime.replace(/:/g, "")}Z`;
-    dtend = dtstart.replace(startTime.replace(/:/g, ""), endTime.replace(/:/g, ""));
-  }
+  // if (dtstart) {
+  //   dtstart += `T${startTime.replace(/:/g, "")}`;
+  //   dtend = dtstart.replace(startTime.replace(/:/g, ""), endTime.replace(/:/g, ""));
+  // }
+
+  const defaultDate = "20241220"; // December 20, 2024
+  const defaultStartTime = "100000"; // 10:00 AM
+  const defaultEndTime = "120000"; // 12:00 PM
+
+  dtstart = dtstart || `${defaultDate}T${defaultStartTime}`;
+  dtend = dtend || `${defaultDate}T${defaultEndTime}`;
+
 
   const icsContent = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
     "BEGIN:VEVENT",
-    `SUMMARY:${activity.title}`,
-    `DESCRIPTION:${activity.description}`,
-    `LOCATION:${
-      typeof activity.location === "string"
-        ? activity.location
-        : activity.location?.name || "Unknown"
-    }`,
-    rrule ? `RRULE:${rrule}` : "",
-    dtstart ? `DTSTART:${dtstart}` : "",
-    dtend ? `DTEND:${dtend}` : "",
+    `SUMMARY:${activity.title || "Untitled Event"}`,
+    `DESCRIPTION:${activity.description || "No description provided."}`,
+    `LOCATION:${typeof activity.location === "string" ? activity.location : activity.location?.name || "Unknown"}`,
+    `DTSTART:${dtstart}`,
+    `DTEND:${dtend}`,
     "END:VEVENT",
     "END:VCALENDAR",
-  ]
-    .filter(Boolean)
-    .join("\r\n");
+  ].filter(Boolean).join("\r\n");
+
+  console.log("Generated ICS Content:\n", icsContent);
 
   const blob = new Blob([icsContent], { type: "text/calendar" });
   const url = URL.createObjectURL(blob);
@@ -104,8 +109,15 @@ const createICSFile = (activity: Activity) => {
 };
 
 /** Converts time string to 24-hour format */
-const convertTo24Hour = (time: string) => {
-  const [hourMin, period] = time.split(" ");
+const convertTo24Hour = (time) => {
+  const periodMatch = time.match(/(am|pm)$/i);
+  if (!periodMatch) {
+    console.error("Invalid time format:", time);
+    return null;
+  }
+
+  const period = periodMatch[0].toUpperCase();
+  const hourMin = time.replace(/(am|pm)$/i, "");
   let [hour, minutes] = hourMin.split(":").map(Number);
 
   if (period === "PM" && hour !== 12) hour += 12;
