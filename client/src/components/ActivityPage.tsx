@@ -23,9 +23,6 @@ interface ActivitiesProps {
   activities: Activity[];
 }
 
-
-
-
 let app;
 if (!app) {
   console.log("Database initialized");
@@ -151,7 +148,6 @@ export default function ActivityPage() {
       fetchAttendanceData();
     }
   }, [activities2, user?.id]);
-
 
   useEffect(() => {
     console.log("fetching activities")
@@ -498,7 +494,7 @@ export default function ActivityPage() {
               )}
             </div>
             <div className="flex flex-row space-x-4 items-start text-base md:text-xl ">
-              <button
+              {/* <button
                     onClick={async () => {
                       toggleCheck(activity.id);
                       await toggleAttendance(activity.id);
@@ -515,7 +511,7 @@ export default function ActivityPage() {
                       />
                       <span>Going</span>
                     </div>
-              </button>
+              </button> */}
               <button
                     onClick={async () => {
                       toggleCheck(activity.id);
