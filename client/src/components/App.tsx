@@ -72,10 +72,10 @@ function App() {
                   </p>
                 </div>
                 <div className="flex justify-end p-4 basis-1/4">
-                  <div className="mx-4 my-auto">
+                  <div className="flex items-center justify-center mx-4 my-auto mt-[5px] md:mt-[10px]">
                     <UserButton />
                   </div>
-                  <div className="paytone-one bg-customRed text-white rounded-lg flex items-center justify-center text-md px-2 py-1 md:px-4 md:py-2 md:text-xl">
+                  <div className="paytone-one bg-customRed text-white rounded-lg flex items-center justify-center text-md w-24 md:w-28 h-8 md:h-11 md:text-xl">
                     <SignOutButton>LOG OUT</SignOutButton>
                     
                   </div>

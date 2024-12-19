@@ -13,6 +13,10 @@ import "../styles/index.css";
 import CalendarIcon from "../assets/CalendarIcon.png"; 
 import { getFirestore } from "firebase/firestore";
 import firebaseConfig2 from "../../resources/firebase2.js";
+import CheckBox from "../assets/CheckBox.png";
+import UnfilledCheckBox from "../assets/UnfilledCheckBox.png";
+import ShareButton from "../assets/ShareButton.png"; 
+import RedPin from "../assets/RedPin.png";
 
 
 interface ActivitiesProps {
@@ -82,12 +86,68 @@ const convertTo24Hour = (time: string) => {
     .padStart(2, "0")}:00`;
 };
 
+
+
 export default function ActivityPage() {
   const { id } = useParams();
+  const [checkedStates, setCheckedStates] = useState<Record<number, boolean>>(
+    {}
+  );
+  const { user } = useUser();
   const navigate = useNavigate();
+  const [activities2, setActivities] = useState<Activity[]>([]);
   const [activity, setActivity] = useState<Activity | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [attendees, setAttendees] = useState<{ userName: string; userPhoto: string }[]>([]);
+  const [attendanceCounts, setAttendanceCounts] = useState<
+    Record<number, number>
+  >({});
+
+  const toggleCheck = (activityId: number) => {
+    setCheckedStates((prevState) => ({
+      ...prevState,
+      [activityId]: !prevState[activityId],
+    }));
+  };
+
+  useEffect(() => {
+    const fetchAttendanceData = async () => {
+      if (!user?.id) return;
+
+      const attendanceCounts: Record<number, number> = {};
+      const userCheckedStates: Record<number, boolean> = {};
+
+      for (const activity of activities2) {
+        const eventId = activity.id;
+
+        try {
+          const eventRef = doc(db, "eventAttendees", eventId.toString());
+          const docSnapshot = await getDoc(eventRef);
+
+          attendanceCounts[eventId] = docSnapshot.exists()
+            ? docSnapshot.data()?.attendees?.length || 0
+            : 0;
+
+          userCheckedStates[eventId] = docSnapshot.exists()
+            ? docSnapshot.data()?.attendees?.includes(user.id)
+            : false;
+        } catch (error) {
+          console.error(
+            `Error fetching attendance for event ${eventId}:`,
+            error
+          );
+        }
+      }
+
+      setAttendanceCounts(attendanceCounts);
+      setCheckedStates(userCheckedStates);
+    };
+
+    if (activities2.length > 0) {
+      fetchAttendanceData();
+    }
+  }, [activities2, user?.id]);
 
   useEffect(() => {
     console.log("fetching activities")
@@ -104,8 +164,8 @@ export default function ActivityPage() {
             title: data.title,
             description: data.description,
             date: data.date,
-            startTime: data.startTime,
-            endTime: data.endTime,
+            startTime: data.start_time,
+            endTime: data.end_time,
             image: data.image,
             location: location.name || "Unknown",
             latitude: location.latitude || "Unknown",
@@ -131,8 +191,6 @@ export default function ActivityPage() {
 
     fetchActivity();
   }, [id]);
-
-  const { user } = useUser();
 
   useEffect(() => {
     if (!user?.id) return;
@@ -188,6 +246,25 @@ export default function ActivityPage() {
     }
   };
 
+  const fetchAttendees = async (activityId: string) => {
+    try {
+      const attendeesDocRef = doc(db, "eventAttendees", activityId);
+      const attendeesSnapshot = await getDoc(attendeesDocRef);
+      if (attendeesSnapshot.exists()) {
+        setAttendees(attendeesSnapshot.data().attendees || []);
+      } else {
+        setAttendees([]);
+      }
+    } catch (error) {
+      console.error("Error fetching attendees:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (activity?.id) {
+      fetchAttendees(activity.id.toString());
+    }
+  }, [activity]);
 
   if (loading) {
     return (
@@ -264,101 +341,214 @@ export default function ActivityPage() {
       .padStart(2, "0")}:00`;
   };
 
+  const toggleAttendance = async (eventId: number) => {
+    if (!user?.id) {
+      console.error("User is not logged in");
+      return;
+    }
+  
+    const { id: userId, fullName: userName, hasImage, imageUrl } = user;
+    const userPhoto = hasImage ? imageUrl : ""; 
+  
+    const eventRef = doc(db, "eventAttendees", eventId.toString());
+  
+    try {
+      const docSnapshot = await getDoc(eventRef);
+  
+      if (!docSnapshot.exists()) {
+        console.log("Event document does not exist. Creating a new one...");
+        await setDoc(eventRef, { attendees: [] });
+      }
+  
+      const attendees = docSnapshot.data()?.attendees || [];
+      const isAttending = attendees.some(
+        (attendee: { userId: string }) => attendee.userId === userId
+      );
+  
+      if (isAttending) {
+        console.log("Removing user from attendance");
+        const updatedAttendees = attendees.filter(
+          (attendee: { userId: string }) => attendee.userId !== userId
+        );
+        await updateDoc(eventRef, { attendees: updatedAttendees });
+      } else {
+        console.log("Adding user to attendance");
+        const newAttendee = { userId, userName, userPhoto };
+        await updateDoc(eventRef, {
+          attendees: arrayUnion(newAttendee),
+        });
+      }
+    } catch (error) {
+      console.error("Error updating attendance:", error);
+    }
+  };  
+
   return (
-    <div className="min-h-screen bg-customBrown text-white p-6">
-      <div className="flex justify-start">
-        <button
-          onClick={() => navigate(-1)}
-          className="bg-customRed text-white px-4 py-2 rounded-lg flex items-center mb-8 paytone-one space-x-2"
-        >
-          <div className="back-arrow"></div>
-          <svg
-            width="24px"
-            height="24px"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            color="white"
-          >
-            <path
-              d="M21 12L3 12M3 12L11.5 3.5M3 12L11.5 20.5"
-              stroke="white"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            ></path>
-          </svg>
-          <span>Back to main</span>
-        </button>
-      </div>
-      <div
-        key={activity.id}
-        className="border border-customLightBrown bg-customLightBrown rounded-2xl p-4 w-auto h-auto text-center space-y-2"
+    <div className="min-h-screen bg-customBrown text-white flex items-center justify-center p-6">
+  {/* Relative container to position the button */}
+  <div className="relative w-8/10 lg:w-3/4">
+    {/* Back to Main Button */}
+    <button
+      onClick={() => navigate(-1)}
+      className="absolute -top-[230px] md:-top-8 left-0 bg-customRed text-white px-4 py-2 rounded-lg flex items-center space-x-2 paytone-one"
+    >
+      <svg
+        width="24px"
+        height="24px"
+        viewBox="0 0 24 24"
+        strokeWidth="1.5"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        color="white"
       >
-        <div className="flex flex-row items-start mt-6 gap-6">
+        <path
+          d="M21 12L3 12M3 12L11.5 3.5M3 12L11.5 20.5"
+          stroke="white"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        ></path>
+      </svg>
+      <span>Back to main</span>
+    </button>
+
+    {/* Centered Box */}
+    <div
+      key={activity.id}
+      className="flex flex-row mt-[-180px] md:mt-8 border border-customLightBrown bg-customLightBrown rounded-2xl p-4 w-full h-auto text-left space-y-2"
+    >
+      {/* left col (title, description, image, time, calendar button) */}
+      <div className="flex flex-col justify-start w-2/3 md:w-7/12 ml-2 md:ml-4 lg:ml-8 mt-2 md:mt-2 lg:mt-4">
+        <div className="flex flex-row space-x-3 lg:space-x-8">
+          <h1 className="paytone-one text-2xl md:text-4xl mb-4 text-customRed">
+            {activity.title}
+          </h1>
+          <button className="mb-4" onClick={() => toggleFavorite(activity.id)}>
+              <img
+                src={
+                  favorites.includes(activity.id.toString())
+                    ? FilledHeart
+                    : UnfilledHeart
+                }
+                className="w-8 h-auto"
+              />
+            </button>
+        </div>
+        <p className="kadwa text-sm md:text-base mb-6 text-customBrown w-5/6">{activity.description}</p>
+        {/* <div className="flex flex-row space-x-4"> */}
           <img
             src={activity.image}
             alt={activity.title}
-            className="w-1/2 max-w-lg h-auto object-cover rounded-lg"
+            className="w-5/6 max-w-lg h-42 object-cover rounded-lg"
           />
-          <div className="flex flex-col justify-start w-1/2">
-            <h1 className="paytone-one text-4xl mb-4 text-customRed">
-              {activity.title}
-            </h1>
-            <p className="kadwa text-lg mb-6 text-black">
-              {activity.description}
-            </p>
-            <div className="kadwa text-lg space-y-4 text-black">
-              <p>
-                <strong>Date and Time:</strong> {activity.date}
-              </p>
-              {/* <p>
-                <strong>Time:</strong> {activity.startTime}
-              </p> */}
-              {/* <p>
-                <strong>Location:</strong> {activity.location}
-              </p> */}
-            </div>
-            <div className="flex flex-row space-x-4 mt-6 items-center justify-center">
-              {/* <button
-                className="kadwa rounded-full px-4 py-3 mt-2 mb-2 text-sm border text-black border-black bg-gray-100 hover:bg-brown-700 hover:text-black focus:outline-none focus:ring-2 focus:ring-black"
-                onClick={() => createICSFile(activity)}
-              >
-                Add to Calendar
-              </button> */}
-              <button
-                className="paytone-one text-sm md:text-sm rounded-lg text-customBrown px-2 py-1 mt-1 mb-1 bg-gray-100 hover:bg-brown-700 hover:text-customRed focus:outline-none focus:ring-2 focus:ring-black"
-                onClick={() => createICSFile(activity)}
-              >
-                <div className="flex items-center space-x-2">
-                  <img
-                    src={CalendarIcon}
-                    className="w-6 h-auto object-cover rounded-lg"
-                  />
-                  <span>Add to Calendar</span>
-                </div>
-              </button>
-              {/* <button
-                className="kadwa rounded-full px-4 py-3 text-sm border text-black border-black bg-gray-100 hover:bg-brown-700 hover:text-black focus:outline-none focus:ring-2 focus:ring-black"
-                onClick={() => alert(`${activity.title} added to favorites!`)}
-              >
-                Add to Favorites
-              </button> */}
-              <button onClick={() => toggleFavorite(activity.id)}>
+        {/* </div> */}
+        <div className="flex flex-row space-x-4">
+        <div className="kadwa text-xs md:text-base space-y-4 text-customBrown">
+          <p className="flex flex-col font-bold mt-3">
+            <span>{activity.date}</span>
+            <span>{`${activity.startTime} - ${activity.endTime}`}</span>
+          </p>
+        </div>
+        <button
+              className="w-36 md:w-44 h-10 mt-2 mb-6 paytone-one text-xs md:text-sm rounded-lg text-customBrown px-2 bg-gray-100 hover:bg-brown-700 hover:text-customRed focus:outline-none focus:ring-2 focus:ring-black"
+              onClick={() => createICSFile(activity)}
+            >
+              <div className="flex items-center space-x-2">
                 <img
-                  src={
-                    favorites.includes(activity.id.toString())
-                      ? FilledHeart
-                      : UnfilledHeart
-                  }
-                  className="w-8 h-auto"
+                  src={CalendarIcon}
+                  className="w-6 h-auto object-cover rounded-lg"
                 />
-              </button>
-            </div>
-          </div>
+                <span>Add to Calendar</span>
+              </div>
+        </button>
         </div>
       </div>
+
+      {/* right col: */}
+      {/* <div className="flex flex-row items-start mt-6"> */}
+        <div className="flex flex-col ml-3 lg:ml-0 justify-start w-1/2">
+          {/* <div className="flex flex-row space-x-4 mt-6 items-center justify-center">
+            
+          </div> */}
+          {/* Attendees Section */}
+          <div className="flex flex-col">
+            <div className="bg-gray-100 rounded-lg p-4 text-customBrown w-84 mb-3 mr-3">
+              <h2 className="paytone-one text-lg md:text-2xl mb-4 text-customRed">
+                Attendees
+              </h2>
+              {attendees.length === 0 ? (
+                <p className="text-gray-500">No attendees yet.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {attendees.map((attendee, index) => (
+                    <li key={index} className="flex items-center space-x-4">
+                      <img
+                        src={attendee.userPhoto || "/default-avatar.png"} 
+                        alt={attendee.userName}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                      <span className="kadwa text-base md:text-lg">{attendee.userName}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="flex flex-row space-x-4 items-start text-base md:text-xl ">
+              <button
+                    onClick={async () => {
+                      toggleCheck(activity.id);
+                      await toggleAttendance(activity.id);
+                    }}
+                    className="focus:outline-none w-28 md:w-32 h-12 text-customBrown paytone-one rounded-lg px-2 py-2 mt-1 mb-1 text-sm bg-gray-100 hover:bg-brown-700 hover:text-customRed focus:outline-none focus:ring-2 focus:ring-black"
+                  >
+                    <div className="flex items-center space-x-3 ml-2">
+                      <img
+                        src={
+                          checkedStates[activity.id] ? CheckBox : UnfilledCheckBox
+                        }
+                        alt={checkedStates[activity.id] ? "Checked" : "Unchecked"}
+                        className="w-6 h-6"
+                      />
+                      <span>Going</span>
+                    </div>
+              </button>
+              <button
+                    onClick={async () => {
+                      toggleCheck(activity.id);
+                      await toggleAttendance(activity.id);
+                    }}
+                    className="focus:outline-none w-28 md:w-32 h-12 text-white paytone-one rounded-lg px-2 py-1 mt-1 mb-1 text-sm bg-customRed hover:bg-brown-700 hover:text-customRed focus:outline-none focus:ring-2 focus:ring-black mr-2"
+                  >
+                    <div className="flex items-center space-x-3 ml-2">
+                      <img
+                        src={ShareButton}
+                        className="w-6 h-6"
+                      />
+                      <span>Share</span>
+                    </div>
+              </button>
+            </div>
+            <div className="flex flex-row space-x-2 mt-4">
+                  <img
+                    src={RedPin}
+                    className="w-4 h-4 object-cover rounded-lg"
+                  />
+                  <p className="kadwa text-sm md:text-base text-customBrown">
+                    {typeof activity.location === "string" ? (
+                      <u>{activity.location}</u>
+                    ) : typeof activity.location === "object" ? (
+                      <u>{activity.location.name || "Unknown"}</u>
+                    ) : (
+                      "Unknown"
+                    )}
+                  </p>
+                </div>
+          </div>
+        </div>
+      {/* </div> */}
     </div>
+  </div>
+</div>
+
   );
-}
+}  
