@@ -29,20 +29,33 @@ class Source(Enum):
     GO_PVD = 3
 
 class Location:
-    def __init__(self, name, lat=None, long=None, url=None):
+    """ 
+    Location class meant to hold either the physical, virtual or hybrid
+    location infortmation for an event
+
+    """
+    def __init__(self, name, lat=None, long=None, address=None):
         self.name = name
         self.lat = lat
         self.long = long
-        self.url = url
+        self.address = address
     
     def to_json(self):
         return {
             "name": self.name,
             "latitude": self.lat,
             "longitude": self.long,
-            "url": self.url }
+            "address": self.address }
 
 class Event:
+    """
+    Definition of event class, this class will be used to store event data
+    when scraped from the sources as well as parse the events in the backend for 
+    Firestore storage
+
+    Includes the class definition as well as a to_json to make displaying it on the server
+    and parsing it easier
+    """
     def __init__(self, source: Source, id: int, title: str, description: str, image: str, 
                  date: str, start_time: str, end_time: str, attendance: int, attendees: list[str], location: Location, 
                  category: str = None, onCampus: bool = False):
@@ -77,6 +90,11 @@ class Event:
             "onCampus": self.onCampus
         }
 class Description_and_Date:
+    """
+    On the Events@Brown page, the description and date are stored under the same
+    header so we created this class to make the scraping of this data easier. 
+    This is exclusive to scraping brown events.
+    """
     def __init__(self, description, date):
         self.description = description
         self.date = date
@@ -88,6 +106,10 @@ class Description_and_Date:
         }
 
 class Time:
+    """
+   Time class that make the start_time and end_time both easier to parse and 
+   store.
+    """
     def __init__(self, start, end):
         self.start = start
         self.end = end
@@ -139,6 +161,10 @@ def driver_helper(url, wait_class_name, source:Source):
 event_id_map = {}
 
 def generate_event_id(event_id_map):
+    """
+    Generates a unique event_id for each scraped event regardless of the webpage
+    it's scraped from
+    """
     while True:
         random_id = random.randint(0, 1000)
         if random_id not in event_id_map:
@@ -147,10 +173,9 @@ def generate_event_id(event_id_map):
 
 def scrape_events(source: Source):
     """
-    Fetches events from the source (Events@Brown, EventBrite, or Go Providence)
-    and parses them into an instance of the Activity class
+    Fetches events from the source (Events@Brown) and parses them into an 
+    instance of the Event class
     """
-
     
     if source == Source.BROWN:
       url = "https://events.brown.edu/all"
@@ -161,9 +186,11 @@ def scrape_events(source: Source):
     events = []
     
     event_containers = soup.find_all("div", class_="lw_cal_event_list")
+    ## all od the events are organized by date so this allows us to look into each date
     for event_list in event_containers:
         event_items = soup.find_all("div", class_= "lw_cal_event")
-        for item in event_items:
+
+        for item in event_items: # for every event in each date
             source = Source.BROWN
             id = generate_event_id(event_id_map)
             title = get_event_title(item, source) # done for Brown
@@ -184,8 +211,8 @@ def scrape_events(source: Source):
             category = "Brown event"
             onCampus = True
             event = Event(source, id, title, description, image, date, start_time, 
-                        end_time, attendance,
-                        attendees, location, category, onCampus)
+                        end_time, attendance,attendees, location, category, 
+                        onCampus)
 
             event_id_map[id] = event
             events.append(event)
@@ -194,7 +221,10 @@ def scrape_events(source: Source):
 
 
 def scrape_eventbrite_events():
-    # Fetches events from Providence EventBrite and parses them 
+    """
+    Fetches events from Providence EventBrite and parses them into an instance 
+    of the Event class
+    """
     url = "https://www.eventbrite.com/d/ri--providence/all-events/"
     events = []
     ids = set()
@@ -206,6 +236,7 @@ def scrape_eventbrite_events():
         
         sections = soup.find_all('section', class_='event-card-details')
         for section in sections:
+
             a = section.a
             if not a:
                 continue
@@ -215,30 +246,65 @@ def scrape_eventbrite_events():
                 continue
                 
             ids.add(event_id)
+
+
+            event_url = a.get('href')
             
-            # Retrieves event details
-            title = a.get('aria-label', 'No title')
-            category = a.get('data-event-category')
-            location_name = a.get('data-event-location', 'Location not specified')
-            paid = a.get('data-event-paid-status') == 'paid'
-            date_str = section.p.text if section.p else None
-            
-            # Get image
-            image = section.parent.find('img', class_='event-card-image')
-            img_url = image['src'] if image is not None else "No Image to Display"
-            
-            # Create Location object
-            location = Location(name=location_name)
+
+            if event_url: 
+                driver = get_driver()
+                try:
+                    driver.get(event_url)
+                except WebDriverException as e:
+                    return "No event specific url"
+                try:
+                    WebDriverWait(driver, 10).until(
+                        EC.presence_of_element_located((By.CLASS_NAME, 
+                        "event_details")))
+                except TimeoutException:
+                    "Issue with getting event_url for Eventbrite"
+                    
+                soup2 = BeautifulSoup(driver.page_source, 'html.parser')
+
+                og_title = a.get('aria-label', 'No title')
+                title = og_title.replace("View", "").replace('\"', '')
+                category = a.get('data-event-category')  
+
+                
+                address = "No address provided" 
+
+                location_info = soup2.find("p", class_="location-info__address-text")
+                location_name = location_info.text.strip() if location_info else "No location information"
+                address_info = location_info.next_element.next_element.text.strip() if location_info else "No address information"
+
+                location = Location(name=location_name, address=address_info)
+
+                paid = a.get('data-event-paid-status') == 'paid'
+
+
+                time_and_date_info= soup2.find("span", class_="date-info__full-datetime")
+                date_info="No date information provided"
+                time_info="No time information provided"
+
+
+                if time_and_date_info: 
+                    split=time_and_date_info.text.split("·")
+                    if len(split) > 1:
+                        date_info = split[0]
+                        time_info = split[1]
+                        
+                image = section.parent.find('img', class_='event-card-image')
+                img_url = image['src'] if image is not None else "No Image to Display"
             
             # Create Event object
             event = Event(
                 source=Source.EVENTBRITE,
                 id=generate_event_id(event_id_map),
                 title=title,
-                description="",  # We could fetch this from the event page if needed
+                description="",
                 image=img_url,
-                date=date_str,
-                start_time=None,  # Could be extracted from date_str if needed
+                date=date_info,
+                start_time=time_info, 
                 end_time=None,
                 attendance = 0,
                 attendees=[],
@@ -256,6 +322,9 @@ def scrape_eventbrite_events():
     return events
 
 def get_event_title(event, source: Source) -> str:
+    """
+    Extracts the event title from the webpage
+    """
     if source == Source.BROWN: 
         event_title = event.find("div", class_="lw_events_title")
         if event_title:
@@ -269,27 +338,28 @@ def get_event_title(event, source: Source) -> str:
 
 def get_event_description_and_date(event, source: Source) -> Description_and_Date:
     """
-    Parses every event and goes to the specicific event url and parses the 
+    Parses every event and goes to the specific event url and parses the 
     first sentence of the description.
     """
     if source == Source.BROWN:
         event_url = event.find("a")["href"]
-        full_url = "https://events.brown.edu" + event_url  # Make the URL absolute
+        full_url = "https://events.brown.edu" + event_url
 
         driver = get_driver()
         try: 
          driver.get(full_url)
         except WebDriverException as e:
-            return Description_and_Date("No description available", "No date available")
+            return Description_and_Date(
+                "No description available", "No date available")
 
-
-    
         try:
             WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "lw_calendar_event_description"))
+            EC.presence_of_element_located((
+                By.CLASS_NAME, "lw_calendar_event_description"))
         )
         except TimeoutException:
-            return Description_and_Date("No description available", "No date available")
+            return Description_and_Date(
+                "No description available", "No date available")
 
 
         soup = BeautifulSoup(driver.page_source, 'html.parser')
@@ -316,6 +386,13 @@ def get_event_description_and_date(event, source: Source) -> Description_and_Dat
 
 
 def get_event_time(event, source: Source) -> str:
+    """
+    For Brown events, this function extracts the time information from 
+    Event@Brown and creates an instance of the time class.
+
+    Time is often included in the date string for eventbrite so this function 
+    is not used for that source.
+    """
     if source == Source.BROWN:
         time_tag = event.find("span", class_="lw_start_time")
         end_time_tag = event.find("span", class_="lw_end_time")
@@ -331,6 +408,10 @@ def get_event_time(event, source: Source) -> str:
     return None
 
 def get_location(event, source: Source) -> Location:
+    """
+    Extracts the physical location information, virtual url or a hybrid for 
+    each events and creates an instance of the Location class
+    """
 
     if source == Source.BROWN:
         virtual_checker = event.find("section", class_="lw_events_online")
@@ -360,12 +441,16 @@ def get_location(event, source: Source) -> Location:
     elif source == Source.EVENTBRITE:
         a = event.find("a")
         if a:
-            location_name = a.get('data-event-location', 'Location not specified')
+            location_name = a.get('data-event-location', 
+                                  'Location not specified')
             return Location(location_name)
     
     return Location("Location not specified")
 
 def get_image(event, source: Source) -> str:
+    """
+    Extracts the image url from each event
+    """
     if source == Source.BROWN:
         image_tag = event.find("div", class_="lw_item_thumb")
         if image_tag:
@@ -386,9 +471,14 @@ def save_events_json(events, filename='events.json'):
 scrape_events(Source.BROWN)
 
 def main():
+    """
+    This function allows the scarper to be called within the server.
+    
+    """
 
     if len(sys.argv) < 2:
-        print(json.dumps({"result": "error", "error": "Source parameter is required"}))
+        print(json.dumps({"result": "error", "error": "Source parameter is" + 
+                          "required"}))
         sys.exit(1)
     
     source = sys.argv[1]
@@ -399,24 +489,30 @@ def main():
         eventbrite_events = scrape_eventbrite_events()
         
         if source.lower() == "brown":
-            json_ready = json.dumps([event.to_json() for event in brown_events]).encode('utf-8').decode('unicode_escape')
+            json_ready = json.dumps([event.to_json() for event in brown_events]
+                                    ).encode('utf-8').decode('unicode_escape')
             print(json_ready)
             return json_ready
             
 
         elif source.lower() == "eventbrite":
-            json_ready = json.dumps([event.to_json() for event in eventbrite_events])
+            json_ready = json.dumps([event.to_json() for event in 
+                                     eventbrite_events]).encode('utf-8').decode(
+                                         'unicode_escape')
             print(json_ready)
             return json_ready
 
         elif source.lower() == "both":
             all_events = json.dumps([event.to_json() for event in brown_events]
-            ).encode('utf-8').decode('unicode_escape') + json.dumps([event.to_json() for event in eventbrite_events])
+            ).encode('utf-8').decode('unicode_escape') + json.dumps([
+                event.to_json() for event in eventbrite_events])
             print(all_events)
             return json_ready
 
-        else:
-            return "Invalid source input"
+        elif ((source.lower() != "brown") or (source.lower() != "eventbrite")):
+            print(json.dumps({"result": "error", "error": "Invalid event source: "
+                              + "please enter brown or eventbrite"}))
+            sys.exit(1)
 
     except Exception as e:
         print(json.dumps({"result": "error","error": str(e)}))

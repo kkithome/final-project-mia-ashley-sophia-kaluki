@@ -1,5 +1,5 @@
 #!/bin/sh
-'''exec' "/Users/kkithome/Desktop/csci 0320/final/final-project-mia-ashley-sophia-kaluki/event-finder/bin/python3.12" "$0" "$@"
+'''exec' "/Users/kkithome/Desktop/csci 0320/final/final-project-mia-ashley-sophia-kaluki/event-finder/bin/python3" "$0" "$@"
 ' '''
 # -*- coding: utf-8 -*-
 import re
