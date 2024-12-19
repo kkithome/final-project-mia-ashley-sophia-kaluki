@@ -379,7 +379,7 @@ export default function Activities({ activities }: ActivitiesProps) {
             description: doc.data().description,
             date: doc.data().date,
             startTime: doc.data().start_time,
-            endTime: doc.data().end_time,
+            endTime: doc.data().end_time || "Unknown",
             image: doc.data().image,
             latitude: doc.data().latitude,
             longitude: doc.data().longitude,

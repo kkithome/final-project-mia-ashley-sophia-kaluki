@@ -16,6 +16,11 @@ const searchActivities = async (keyword: string = "", filters: any = {}): Promis
       baseQuery = query(baseQuery, where("category", "==", category));
     }
 
+    /** filtering by isOnCampus */
+    if (typeof isOnCampus === "boolean") {
+      baseQuery = query(baseQuery, where("onCampus", "==", isOnCampus));
+    }
+
     const querySnapshot = await getDocs(baseQuery);
 
     let fetchedActivities: Activity[] = querySnapshot.docs.map((doc) => {
@@ -27,7 +32,7 @@ const searchActivities = async (keyword: string = "", filters: any = {}): Promis
         description: data.description,
         date: data.date,
         startTime: data.start_time,
-        endTime: data.end_time,
+        endTime: data.end_time || "Unknown",
         image: data.image,
         location: location.name || "Unknown", 
         latitude: location.latitude || "Unknown",
@@ -64,6 +69,7 @@ const searchActivities = async (keyword: string = "", filters: any = {}): Promis
       });
     }
 
+    console.log("filtered by time", fetchedActivities); 
     return fetchedActivities;
   } catch (error) {
     console.error("Error fetching activities:", error);
@@ -73,7 +79,8 @@ const searchActivities = async (keyword: string = "", filters: any = {}): Promis
 
 /** change time string to 24 hour */
 const convertTo24Hour = (time: string): string => {
-  const [hourMin, period] = time.split(" ");
+  const [hourMin, rawPeriod] = time.split(" ");
+  const period = rawPeriod.toUpperCase();
   let [hour, minutes] = hourMin.split(":").map(Number);
 
   if (period === "PM" && hour !== 12) hour += 12;
@@ -81,5 +88,6 @@ const convertTo24Hour = (time: string): string => {
 
   return `${hour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
 };
+
 
 export default searchActivities;

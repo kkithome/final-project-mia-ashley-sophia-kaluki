@@ -42,7 +42,7 @@ export default function ActivitiesFinder() {
               description: data.description,
               date: data.date,
               startTime: data.start_time,
-              endTime: data.end_time,
+              endTime: data.end_time || "Unknown",
               image: data.image,
               location: typeof data.location === "object" && data.location.name ? data.location.name : "Unknown",
               latitude: data.location?.latitude || "Unknown",
