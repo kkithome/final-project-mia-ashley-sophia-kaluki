@@ -151,9 +151,11 @@ test("clicking going increases attendance by 1", async ({ page }) => {
   await page.getByText('0 Attending').nth(1).click();
   await page.locator('div:nth-child(6) > div:nth-child(4) > button:nth-child(2)').click();
   await page.goto('http://localhost:8000/');
-  //await page.locator('div:nth-child(6) > div:nth-child(4) > button:nth-child(2)').click();
-  await page.getByRole('button', { name: 'Checked Going', exact: true }).click();
-  expect(page.getByText('1 Attending'))
+  await page.locator('div:nth-child(6) > div:nth-child(4) > button:nth-child(2)').click();
+  await expect(page.getByText("3 Attending").first()).toBeVisible();
+
+  // await page.getByRole('button', { name: 'Checked Going', exact: true }).click();
+  // await expect(page.getByRole("main")).toContainText("3 Attending");
 });
 
 // // testing that favoriting an event adds it to the user profile favorited events list
@@ -246,6 +248,87 @@ await page.getByPlaceholder('Enter location').fill('20 North Main Street Provide
 await page.getByRole('button', { name: 'Submit Search' }).click();
 expect(page.getByRole('heading', { name: 'Rhode Island School of Design' })); 
 }); 
+
+// test that clicking on an event from favorites list redirects us to that page
+test("test that clicking on an event from favorites list redirects us to that page", async ({
+  page,
+}) => {
+  await page.goto("http://localhost:8000/");
+  await page
+    .locator("div")
+    .filter({ hasText: /^LOG IN$/ })
+    .click();
+  await page.getByPlaceholder("Enter your email address").click();
+  await page
+    .getByPlaceholder("Enter your email address")
+    .fill("student_one@brown.edu");
+  await page.getByPlaceholder("Enter your email address").press("Enter");
+  await page.getByRole("button", { name: "Continue", exact: true }).click();
+  await page.getByPlaceholder("Enter your password").click();
+  await page.getByPlaceholder("Enter your password").fill("studentone123");
+  await page.getByRole("button", { name: "Continue" }).click();
+  await page.getByRole("button", { name: "User Profile" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Favorited Events" })
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "India Point Park" })
+  ).toBeVisible();
+  await page.getByRole("link", { name: "India Point Park" }).click();
+  await expect(
+    page.getByRole("heading", { name: "India Point Park" })
+  ).toBeVisible();
+  await expect(page.getByRole("main")).toContainText(
+    "India Point Park is a park in the Fox Point neighborhood of Providence, Rhode Island at the confluence of the Seekonk River and Providence River."
+  );
+  await expect(
+    page.getByRole("img", { name: "India Point Park" })
+  ).toBeVisible();
+  await expect(page.locator("u")).toContainText(
+    "201 India St, Providence, RI 02903"
+  );
+});
+
+// test that attendee list exists for an event
+test("attendee list exists for an event", async ({ page }) => {
+    await page.goto('http://localhost:8000/');
+    await page.locator('div').filter({ hasText: /^LOG IN$/ }).click();
+    await page.getByPlaceholder('Enter your email address').click();
+    await page.getByPlaceholder('Enter your email address').fill('student_one@brown.edu');
+    await page.getByPlaceholder('Enter your email address').press('Enter');
+    await page.getByRole('button', { name: 'Continue', exact: true }).click();
+    await page.getByPlaceholder('Enter your password').click();
+    await page.getByPlaceholder('Enter your password').fill('studentone123');
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await expect(page.getByRole('heading', { name: 'Historic Federal Hill' })).toBeVisible();
+  await page.getByRole('heading', { name: 'Historic Federal Hill' }).click();
+  await expect(page.getByRole('heading', { name: 'Attendees' })).toBeVisible();
+  await expect(page.getByText("AttendeesAshley WoertzMia")).toBeVisible();
+  await expect(page.getByRole('list')).toContainText('Ashley Woertz');
+});
+
+// test for anonimity
+test("attendee list have anon user", async ({ page }) => {
+    await page.goto('http://localhost:8000/');
+    await page.locator('div').filter({ hasText: /^LOG IN$/ }).click();
+    await page.getByPlaceholder('Enter your email address').click();
+    await page.getByPlaceholder('Enter your email address').fill('student_one@brown.edu');
+    await page.getByPlaceholder('Enter your email address').press('Enter');
+    await page.getByRole('button', { name: 'Continue', exact: true }).click();
+    await page.getByPlaceholder('Enter your password').click();
+    await page.getByPlaceholder('Enter your password').fill('studentone123');
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await page.getByRole('button', { name: 'User Profile' }).click();
+  await expect(page.getByText('Profile Visibility:Show')).toBeVisible();
+  await page.getByRole('button', { name: 'Show Profile' }).click();
+  await expect(page.getByRole('main')).toContainText('Stay Anonymous');
+  await page.getByRole('button', { name: 'Back to Main' }).click();
+  await page.locator('div:nth-child(7) > div:nth-child(4) > button:nth-child(2)').click();
+  await expect(page.getByRole('button', { name: 'Checked Going', exact: true })).toBeVisible();
+  await page.getByRole('heading', { name: 'CCV Office Hours' }).click();
+  await expect(page.getByRole('listitem')).toBeVisible();
+  await expect(page.getByRole('listitem').getByRole('img')).toBeVisible();
+});
 
 //TODO: search test with a filter by date (December 31st)
 
