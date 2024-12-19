@@ -53,7 +53,7 @@ Our backend primarily consists of the web scraping functionality, which pulls ev
 
 # Errors/Bugs
 
-Due to the inconsisency of some fields when web scraping from Providence eventbrite, we ended up with a null field for date/time for some of our events. While we wrote the code for the anonymous function, it is currently not working since we can't set up the database due to firebase quota limits, so the list of attendees for any given event is public; moroever, the list of attendees can sometimes be a bit fickle/take a while to update. In future development of Bear Tracks, we also would like to link the pins to the specific events they represent so that a user can properly identify them; we also hope to integrate route generation into our application. 
+Due to the inconsisency of some fields when web scraping from Providence eventbrite, we ended up with a null field for date/time for some of our events. Because of the issues with the null time/date, the calendar function is a bit finicky. While we wrote the code for the anonymous function, it is currently not working since we can't set up the database due to firebase quota limits, so the list of attendees for any given event is public; moroever, the list of attendees can sometimes be a bit fickle/take a while to update. In future development of Bear Tracks, we also would like to link the pins to the specific events they represent so that a user can properly identify them; we also hope to integrate route generation into our application. 
 
 # Tests
 
