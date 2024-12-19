@@ -40,6 +40,11 @@ We used tailwind CSS to match our design on figma to our frontend code.
 
 Bright Data. (n.d.). Web scraping with Python: A how-to guide. Retrieved November 20, 2024, from https://brightdata.com/blog/how-tos/web-scraping-with-python
 
+
+Lecture 23: Searching & Sorting. (n.d.). CS0112: Computation Foundations: Data. https://cs0112.github.io/Lectures/lecture23.html
+
+We used CS0112's site as a starting point for web scraping. 
+
 # Design Choices
 
 Despite the numerous interesting (and free!) events that happen at Brown and in Providence as a whole, many students miss out on them because they are not yet subscribed to the corresponding channel, including Today@Brown or department-specific newsletters. Keeping track of events in Providence can be even trickier, as information about these events is often disseminated through channels that aren’t affiliated with Brown. Accordingly, our platform, Bear Tracks, provides a centralized list of events and activities at Brown and in the broader Providence community. Our platform prioritizes the safety and security of our users; only users with a brown.edu email address are able to create an account and login. When users login to our account, they will be able to see events that are webscraped from events@brown and eventbrite for Providence; the user can scroll through these events, which are displayed over several pages. Furthermore, events feature a description, # of attendees, an image, time of occurence, and address. A user can also press add to calendar to add an event to their calendar, click going to add themselves to the attendees list (which is visible if one clicks on an event title to learn more), or heart it to add the event to their favorites list. If a user clicks on their user profile, they can see their "favorited" list of events, adjust the anonymity of their profile, and see a list of upcoming events. On the main activity page, users can also see a map display of events in Providence; they may also click the search button and narrow their activity search by different parameters. In particular, a user may filter their event search by keyword, time of day, category, date, on-campus/off-campus, and location; activityfinder.tsx will then load the activities from firebase. 
