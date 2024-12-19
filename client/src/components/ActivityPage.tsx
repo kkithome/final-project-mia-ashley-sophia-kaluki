@@ -164,7 +164,7 @@ export default function ActivityPage() {
             description: data.description,
             date: data.date,
             startTime: data.start_time,
-            endTime: data.end_time,
+            endTime: data.end_time || "Unknown",
             image: data.image,
             location: location.name || "Unknown",
             latitude: location.latitude || "Unknown",
