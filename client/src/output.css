@@ -898,6 +898,10 @@ video {
   color: rgba(78, 54, 41, var(--tw-text-opacity));
 }
 
+.divide-customBrown > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(78, 54, 41, var(--tw-text-opacity));
+}
+
 
 body {
   margin: 0;
