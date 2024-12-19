@@ -466,7 +466,7 @@ export default function ActivityPage() {
 
       {/* right col: */}
       {/* <div className="flex flex-row items-start mt-6"> */}
-        <div className="flex flex-col ml-3 lg:ml-0 justify-start w-1/2">
+        <div className="flex flex-col ml-3 lg:ml-2 justify-start w-1/2">
           {/* <div className="flex flex-row space-x-4 mt-6 items-center justify-center">
             
           </div> */}
