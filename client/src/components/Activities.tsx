@@ -16,7 +16,7 @@ import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import { activities as fileActivities, Activity } from "../activityData";
 import firebaseConfig2 from "../../resources/firebase2.js";
 import { useParams, useNavigate } from "react-router-dom";
-import { useUser } from "@clerk/clerk-react";
+import { useUser, hasImage, imageUrl, fullName } from "@clerk/clerk-react";
 import CalendarIcon from "../assets/CalendarIcon.png";
 import UnfilledHeart from "../assets/UnfilledHeart.png";
 import FilledHeart from "../assets/FilledHeart.png";
@@ -329,34 +329,42 @@ export default function Activities({ activities }: ActivitiesProps) {
       console.error("User is not logged in");
       return;
     }
-
+  
+    const { id: userId, fullName: userName, hasImage, imageUrl } = user;
+    const userPhoto = hasImage ? imageUrl : ""; 
+  
     const eventRef = doc(db, "eventAttendees", eventId.toString());
-
+  
     try {
       const docSnapshot = await getDoc(eventRef);
-
+  
       if (!docSnapshot.exists()) {
         console.log("Event document does not exist. Creating a new one...");
         await setDoc(eventRef, { attendees: [] });
       }
-
-      const isAttending = docSnapshot.data()?.attendees?.includes(user.id);
-
+  
+      const attendees = docSnapshot.data()?.attendees || [];
+      const isAttending = attendees.some(
+        (attendee: { userId: string }) => attendee.userId === userId
+      );
+  
       if (isAttending) {
         console.log("Removing user from attendance");
-        await updateDoc(eventRef, {
-          attendees: arrayRemove(user.id),
-        });
+        const updatedAttendees = attendees.filter(
+          (attendee: { userId: string }) => attendee.userId !== userId
+        );
+        await updateDoc(eventRef, { attendees: updatedAttendees });
       } else {
         console.log("Adding user to attendance");
+        const newAttendee = { userId, userName, userPhoto };
         await updateDoc(eventRef, {
-          attendees: arrayUnion(user.id),
+          attendees: arrayUnion(newAttendee),
         });
       }
     } catch (error) {
       console.error("Error updating attendance:", error);
     }
-  };
+  };  
 
   const fetchAttendance = async (eventId: number) => {
     try {
@@ -391,7 +399,7 @@ export default function Activities({ activities }: ActivitiesProps) {
 
   useEffect(() => {
     if (activities && activities.length > 0) {
-      setActivities(activities);
+      setActivities(activities); 
     } else {
       const fetchActivities = async () => {
         const collectionRef = collection(db, "activities");
