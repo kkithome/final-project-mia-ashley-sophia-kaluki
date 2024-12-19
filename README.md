@@ -32,7 +32,7 @@ https://github.com/cs0320-f24/final-project-mia-ashley-sophia-kaluki
 
 OpenAI. (2024). ChatGPT (May 13 version) [Large language model]. https://chat.openai.com/chat/
 
-We used ChatGPT to help with the process builder that allowed us to call the scraper using Java.
+We used ChatGPT to help with the process builder that allowed us to call the scraper using Java. Additionally, ChatGPT was helpful for debugging firebase functions that update what events the user will be attending (and to maintain a local state via a button).
 
 Tailwind CSS. (n.d.). Tailwind CSS documentation (v2). Retrieved December 2, 2024, from https://v2.tailwindcss.com/docs
 
