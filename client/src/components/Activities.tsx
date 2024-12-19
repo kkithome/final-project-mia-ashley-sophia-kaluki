@@ -30,6 +30,7 @@ interface ActivitiesProps {
   activities: Activity[];
 }
 
+/** Initializing the firestore database if it doesn't already exist */
 let app;
 if (!app) {
   console.log("Database initialized");
@@ -42,61 +43,7 @@ const db = getFirestore(app);
 
 export { db };
 
-/**
- * This method creates a .ics file download so the user can
- * add the event to their calendar.
- */
-// const createICSFile = (activity: Activity) => {
-//   // const startDateTime = new Date(`${activity.date}T${convertTo24Hour(activity.startTime)}`).toISOString();
-//   // const endDateTime = new Date(
-//   //   new Date(startDateTime).getTime() + 60 * 60 * 1000
-//   // ).toISOString();
-
-//   const icsContent = [
-//     "BEGIN:VCALENDAR",
-//     "VERSION:2.0",
-//     "BEGIN:VEVENT",
-//     `SUMMARY:${activity.title}`,
-//     `DESCRIPTION:${activity.description}`,
-//     `LOCATION:${typeof activity.location === "string" ? (
-//                     <u>{activity.location}</u>
-//                   ) : typeof activity.location === "object" ? (
-//                     <u>{activity.location.name || "Unknown"}</u>
-//                   ) : (
-//                     "Unknown"
-//                   )}`,
-//     // `DTSTART:${startDateTime.replace(/[-:]/g, "").split(".")[0]}Z`,
-//     `DTSTART:${activity.startTime}`,
-//     // `DTEND:${endDateTime.replace(/[-:]/g, "").split(".")[0]}Z`,
-//     `DTEND:${activity.endTime}`,
-//     "END:VEVENT",
-//     "END:VCALENDAR",
-//   ].join("\r\n");
-
-//   const blob = new Blob([icsContent], { type: "text/calendar" });
-//   const url = URL.createObjectURL(blob);
-
-//   const link = document.createElement("a");
-//   link.href = url;
-//   link.download = `${activity.title}.ics`;
-//   link.click();
-
-//   URL.revokeObjectURL(url);
-// };
-
-// /**
-//  * This method converts the time string to a more readable format.
-//  */
-// const convertTo24Hour = (time: string) => {
-//   const [hourMin, period] = time.split(" ");
-//   let [hour, minutes] = hourMin.split(":").map(Number);
-
-//   if (period === "PM" && hour !== 12) hour += 12;
-//   if (period === "AM" && hour === 12) hour = 0;
-
-//   return `${hour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:00`;
-// };
-
+/** Creates a calendar download file based on the event information */
 const createICSFile = (activity: Activity) => {
   let dtstart = "";
   let dtend = "";
@@ -142,7 +89,7 @@ const createICSFile = (activity: Activity) => {
     "END:VEVENT",
     "END:VCALENDAR",
   ]
-    .filter(Boolean) // Remove empty lines
+    .filter(Boolean)
     .join("\r\n");
 
   const blob = new Blob([icsContent], { type: "text/calendar" });
@@ -156,9 +103,7 @@ const createICSFile = (activity: Activity) => {
   URL.revokeObjectURL(url);
 };
 
-/**
- * Converts time string to 24-hour format.
- */
+/** Converts time string to 24-hour format */
 const convertTo24Hour = (time: string) => {
   const [hourMin, period] = time.split(" ");
   let [hour, minutes] = hourMin.split(":").map(Number);
@@ -169,7 +114,7 @@ const convertTo24Hour = (time: string) => {
   return `${hour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
 };
 
-
+/** Component rendering */
 export default function Activities({ activities }: ActivitiesProps) {
   const [activities2, setActivities] = useState<Activity[]>([]);
   const navigate = useNavigate();
@@ -181,12 +126,14 @@ export default function Activities({ activities }: ActivitiesProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
 
+  /** Limits the number of activities per page, with arrows to move to the next and previous pages */
   const totalPages = Math.ceil(activities2.length / itemsPerPage);
   const currentItems = activities2.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
+  /** Initializes activities */
   useEffect(() => {
     if (activities) {
       console.log("Setting activities2:", activities);
@@ -201,30 +148,21 @@ export default function Activities({ activities }: ActivitiesProps) {
     setActivities(activities);
   }, [activities]);
 
-  useEffect(() => {
-    console.log("Updated activities2:", activities2);
-  }, [activities2]);
-
-  useEffect(() => {
-    console.log("Received activities:", activities);
-  }, [activities]);
-
-  useEffect(() => {
-    console.log("Updated activities2:", activities2);
-  }, [activities2]);
-
+  /** Move to the next page */
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage((prev) => prev + 1);
     }
   };
 
+  /** Move to the previous page */
   const handlePreviousPage = () => {
     if (currentPage > 1) {
       setCurrentPage((prev) => prev - 1);
     }
   };
 
+  /** When you click the check mark on going */
   const toggleCheck = (activityId: number) => {
     setCheckedStates((prevState) => ({
       ...prevState,
@@ -232,6 +170,7 @@ export default function Activities({ activities }: ActivitiesProps) {
     }));
   };
 
+  /** Fetches attendance information for all activities and checks whether the current user is going */
   useEffect(() => {
     const fetchAttendanceData = async () => {
       if (!user?.id) return;
@@ -270,6 +209,7 @@ export default function Activities({ activities }: ActivitiesProps) {
     }
   }, [activities2, user?.id]);
 
+  /** Grabs favorites from the firebase to show which the user has hearted */
   useEffect(() => {
     if (!user?.id) return;
     const fetchFavorites = async () => {
@@ -286,6 +226,7 @@ export default function Activities({ activities }: ActivitiesProps) {
     fetchFavorites();
   }, [user?.id]);
 
+  /** Push to firebase when a user favorites an event and change the heart image */
   const toggleFavorite = async (activityId: number) => {
     if (!user?.id) {
       console.error("User is not logged in");
@@ -324,6 +265,7 @@ export default function Activities({ activities }: ActivitiesProps) {
     }
   };
 
+  /** Push to firebase when a user says they will go to an event */
   const toggleAttendance = async (eventId: number) => {
     if (!user?.id) {
       console.error("User is not logged in");
@@ -331,46 +273,60 @@ export default function Activities({ activities }: ActivitiesProps) {
     }
   
     const { id: userId, fullName: userName, hasImage, imageUrl } = user;
-    const userPhoto = hasImage ? imageUrl : ""; 
+    const userPhoto = hasImage ? imageUrl : "";
   
     const eventRef = doc(db, "eventAttendees", eventId.toString());
   
     try {
       const docSnapshot = await getDoc(eventRef);
+      let attendees = docSnapshot.exists() ? docSnapshot.data()?.attendees || [] : [];
   
-      if (!docSnapshot.exists()) {
-        console.log("Event document does not exist. Creating a new one...");
-        await setDoc(eventRef, { attendees: [] });
-      }
-  
-      const attendees = docSnapshot.data()?.attendees || [];
       const isAttending = attendees.some(
         (attendee: { userId: string }) => attendee.userId === userId
       );
   
       if (isAttending) {
-        console.log("Removing user from attendance");
         const updatedAttendees = attendees.filter(
           (attendee: { userId: string }) => attendee.userId !== userId
         );
         await updateDoc(eventRef, { attendees: updatedAttendees });
+  
+        setCheckedStates((prevState) => ({
+          ...prevState,
+          [eventId]: false,
+        }));
+  
+        setAttendanceCounts((prevState) => ({
+          ...prevState,
+          [eventId]: prevState[eventId] > 0 ? prevState[eventId] - 1 : 0,
+        }));
       } else {
-        console.log("Adding user to attendance");
         const newAttendee = { userId, userName, userPhoto };
         await updateDoc(eventRef, {
           attendees: arrayUnion(newAttendee),
         });
+  
+        setCheckedStates((prevState) => ({
+          ...prevState,
+          [eventId]: true,
+        }));
+  
+        setAttendanceCounts((prevState) => ({
+          ...prevState,
+          [eventId]: (prevState[eventId] || 0) + 1,
+        }));
       }
     } catch (error) {
       console.error("Error updating attendance:", error);
     }
-  };  
-
+  };
+  
+  /** Fetches attendance counts for all activities */
   const fetchAttendance = async (eventId: number) => {
     try {
       const eventRef = doc(db, "eventAttendees", eventId.toString());
       const docSnapshot = await getDoc(eventRef);
-
+  
       return docSnapshot.exists()
         ? docSnapshot.data()?.attendees?.length || 0
         : 0;
@@ -379,27 +335,39 @@ export default function Activities({ activities }: ActivitiesProps) {
       return 0;
     }
   };
-
-  const [attendanceCounts, setAttendanceCounts] = useState<
-    Record<number, number>
-  >({});
-
+  
+  /** State and Effect for attendance counts */
+  const [attendanceCounts, setAttendanceCounts] = useState<Record<number, number>>({});
+  
   useEffect(() => {
     const fetchAllAttendance = async () => {
       const counts: Record<number, number> = {};
+      const checked: Record<number, boolean> = {};
+  
       for (const activity of activities2) {
         const count = await fetchAttendance(activity.id);
         counts[activity.id] = count;
+  
+        const eventRef = doc(db, "eventAttendees", activity.id.toString());
+        const docSnapshot = await getDoc(eventRef);
+        const attendees = docSnapshot.exists() ? docSnapshot.data()?.attendees || [] : [];
+        const isUserAttending = attendees.some(
+          (attendee: { userId: string }) => attendee.userId === user.id
+        );
+        checked[activity.id] = isUserAttending;
       }
+  
       setAttendanceCounts(counts);
+      setCheckedStates(checked);
     };
-
+  
     fetchAllAttendance();
-  }, [activities2]);
-
+  }, [activities2, user?.id]);
+  
+  /** Fetch activities if not passed */
   useEffect(() => {
     if (activities && activities.length > 0) {
-      setActivities(activities); 
+      setActivities(activities);
     } else {
       const fetchActivities = async () => {
         const collectionRef = collection(db, "activities");
@@ -429,7 +397,7 @@ export default function Activities({ activities }: ActivitiesProps) {
       };
       fetchActivities();
     }
-  }, [activities]);
+  }, [activities]);  
 
   return (
     <div className="flex flex-row items-center justify-center flex-wrap gap-8">
