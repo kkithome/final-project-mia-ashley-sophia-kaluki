@@ -23,6 +23,9 @@ interface ActivitiesProps {
   activities: Activity[];
 }
 
+
+
+
 let app;
 if (!app) {
   console.log("Database initialized");
@@ -148,6 +151,7 @@ export default function ActivityPage() {
       fetchAttendanceData();
     }
   }, [activities2, user?.id]);
+
 
   useEffect(() => {
     console.log("fetching activities")
