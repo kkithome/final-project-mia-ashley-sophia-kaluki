@@ -2,22 +2,10 @@
 Final Project — Bear Tracks Activity Finder 
 
 # Team Members and Contributions 
-
 Kaluki Kithome 
-
-cslogin: kkithome 
-
 Sophia Lloyd George 
-
-cslogin: slloydge 
-
 Mia Nguyen 
-
-cslogin: hgnguyen 
-
-Ashley Woertz: 
-
-cslogin: awoertz
+Ashley Woertz
 
 # Contributions 
 We worked on this assignment together and designated specific tasks if we were unable to meet in person. Initially, Kaluki and Sophia were working on the backend code, writing web scrapers to scrape events from events@brown and eventbrite; meanwhile, Ashley and Mia were working on frontend design (figma) and development. Halfway through our project's development, Sophia moved to the frontend and Ashley shifted focus to integration of the backend and frontend; Mia continued to work on key frontend components, such as activities.tsx and mapbox.tsx, and Kaluki puzzled through the relation between the backend and the firebase storage of web scraped data. Lastly, we wrote tests for the frontend; as our backend primarily consists of the web scrapers, we will demonstrate that our backend works as expected by contrasting it with eventbrite and today@brown data as well as the firebase storage of data.  
